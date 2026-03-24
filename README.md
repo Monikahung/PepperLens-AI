@@ -1,16 +1,27 @@
-# pepperlens_ai
+# PepperLens AI - Pengembangan Sistem Deteksi Penyakit Lada Berbasis Android Menggunakan Evaluasi Komparatif Varian YOLOv11
 
-A new Flutter project.
+PepperLens AI adalah aplikasi android berbasis Flutter untuk mendeteksi penyakit tanaman lada berbasis citra daun serta menyajikan informasi lebih lanjut mengenai penyakit yang terdeteksi berdasarkan rujukan dari ahli.
 
-## Getting Started
+Aplikasi ini dikembangkan untuk membantu pengguna mengidentifikasi penyakit tanaman lada dengan tepat dan cepat supaya dapat dikendalikan dengan lebih maksimal.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## Fitur Utama
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Deteksi** - Menggunakan Computer Vision (Model hasil perbandingan varian YOLOv11) untuk mendeteksi penyakit tanaman lada berbasis citra daun serta memberikan informasi lebih lanjut mengenai penyakit yang terdeteksi, seperti gejala, pengendalian, dan identifikasi lanjutan.
+- **Ensiklopedia** - Menampilkan empat penyakit tanaman lada (busuk pangkal batang, kuning, keriting/kerdil, dan hawar daun) beserta informasi detail dari penyakit tersebut yang bisa diakses pengguna tanpa harus melakukan deteksi, seperti deskripsi singkat, gejala, penyebab, pengendalian, dan identifikasi lanjutan.
+- **Riwayat** - Menampilkan riwayat deteksi dan visualisasi hasil deteksi berupa diagram batang.
+- **Panduan** - Menampilkan panduan penggunaan aplikasi.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Teknologi yang Digunakan
+
+- **Python** - Bahasa pemrograman untuk training dan testing empat eksperimen model YOLOv11, yaitu varian nano dan small yang dikombinasi dengan optimizer SGD dan AdamW.
+- **Dart** - Bahasa pemrograman untuk pengembangan aplikasi.
+- **Flutter** - Framework utama aplikasi.
+- **SQLite** - Database offline aplikasi.
+
+---
+
+## Dikembangkan oleh Monika - Proyek Akhir 2026
