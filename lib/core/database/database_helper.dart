@@ -36,6 +36,7 @@ class DatabaseHelper {
       CREATE TABLE Penyakit (
         id_penyakit INTEGER PRIMARY KEY AUTOINCREMENT,
         nama_penyakit TEXT NOT NULL,
+        nama_inggris TEXT NOT NULL,
         preview_penyakit TEXT NOT NULL,
         desc_penyakit TEXT NOT NULL
       )

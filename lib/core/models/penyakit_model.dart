@@ -1,6 +1,7 @@
 class PenyakitModel {
   final int? idPenyakit;
   final String namaPenyakit;
+  final String namaInggris;
   final String previewPenyakit;
   final String descPenyakit;
 
@@ -8,6 +9,7 @@ class PenyakitModel {
   PenyakitModel({
     this.idPenyakit,
     required this.namaPenyakit,
+    required this.namaInggris,
     required this.previewPenyakit,
     required this.descPenyakit,
   });
@@ -17,6 +19,7 @@ class PenyakitModel {
     return PenyakitModel(
       idPenyakit: map['id_penyakit'],
       namaPenyakit: map['nama_penyakit'],
+      namaInggris: map['nama_inggris'],
       previewPenyakit: map['preview_penyakit'],
       descPenyakit: map['desc_penyakit'],
     );
@@ -27,6 +30,7 @@ class PenyakitModel {
     return {
       'id_penyakit': idPenyakit,
       'nama_penyakit': namaPenyakit,
+      'nama_inggris': namaInggris,
       'preview_penyakit': previewPenyakit,
       'desc_penyakit': descPenyakit,
     };
