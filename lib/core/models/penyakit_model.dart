@@ -1,12 +1,14 @@
 class PenyakitModel {
   final int? idPenyakit;
   final String namaPenyakit;
+  final String previewPenyakit;
   final String descPenyakit;
 
   // Constructor utama untuk membuat objek Penyakit
   PenyakitModel({
     this.idPenyakit,
     required this.namaPenyakit,
+    required this.previewPenyakit,
     required this.descPenyakit,
   });
 
@@ -15,6 +17,7 @@ class PenyakitModel {
     return PenyakitModel(
       idPenyakit: map['id_penyakit'],
       namaPenyakit: map['nama_penyakit'],
+      previewPenyakit: map['preview_penyakit'],
       descPenyakit: map['desc_penyakit'],
     );
   }
@@ -24,6 +27,7 @@ class PenyakitModel {
     return {
       'id_penyakit': idPenyakit,
       'nama_penyakit': namaPenyakit,
+      'preview_penyakit': previewPenyakit,
       'desc_penyakit': descPenyakit,
     };
   }
