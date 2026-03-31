@@ -88,23 +88,13 @@ class DatabaseHelper {
       CREATE TABLE Identifikasi_Lanjutan (
         id_identifikasi INTEGER PRIMARY KEY AUTOINCREMENT,
         id_penyakit INTEGER,
-        path_gambar TEXT NOT NULL,
+        urutan INTEGER NOT NULL,
+        desc_langkah TEXT NOT NULL,
         FOREIGN KEY (id_penyakit) REFERENCES Penyakit (id_penyakit) ON DELETE CASCADE
       )
     ''');
 
-    // 7. Tabel Langkah Identifikasi Lanjutan
-    await db.execute('''
-      CREATE TABLE Langkah_Identifikasi (
-        id_langkah INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_identifikasi INTEGER,
-        urutan INTEGER NOT NULL,
-        desc_langkah TEXT NOT NULL,
-        FOREIGN KEY (id_identifikasi) REFERENCES Identifikasi_Lanjutan (id_identifikasi) ON DELETE CASCADE
-      )
-    ''');
-
-    // 8. Tabel Hasil Deteksi
+    // 7. Tabel Hasil Deteksi
     await db.execute('''
       CREATE TABLE Hasil_Deteksi (
         id_hasil_deteksi INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +105,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // 9. Tabel Detail Deteksi
+    // 8. Tabel Detail Deteksi
     await db.execute('''
       CREATE TABLE Detail_Deteksi (
         id_detail_deteksi INTEGER PRIMARY KEY AUTOINCREMENT,
