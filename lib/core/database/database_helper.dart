@@ -1,5 +1,11 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
+import 'seeds/penyakit_seed.dart';
+import 'seeds/gejala_seed.dart';
+import 'seeds/penyebab_seed.dart';
+import 'seeds/pengendalian_seed.dart';
+import 'seeds/identifikasi_lanjutan_seed.dart';
 
 class DatabaseHelper {
   // Instance tunggal untuk Singleton agar koneksi database tetap konsisten
@@ -119,5 +125,28 @@ class DatabaseHelper {
         FOREIGN KEY (id_penyakit) REFERENCES Penyakit (id_penyakit) ON DELETE CASCADE
       )
     ''');
+
+    // Jalankan seeding data
+    await db.transaction((txn) async {
+      try {
+        // Masukkan data penyakit dan ambil map id
+        Map<int, int> penyakitIds = await PenyakitSeed.addDataPenyakit(txn);
+
+        // Masukkan data relasional menggunakan map id tersebut
+        await GejalaSeed.addDataGejala(txn, penyakitIds);
+        await PenyebabSeed.addDataPenyebab(txn, penyakitIds);
+        await PengendalianSeed.addDataPengendalian(txn, penyakitIds);
+        await IdentifikasiLanjutanSeed.addDataIdentifikasiLanjutan(
+          txn,
+          penyakitIds,
+        );
+
+        // Jika semua transaksi berhasil, cetak pesan sukses
+        debugPrint("Check: Seeding database pepperlens_ai sukses!");
+      } catch (e) {
+        // Jika terjadi error, cetak pesan error
+        debugPrint("Check: Seeding database gagal: $e");
+      }
+    });
   }
 }
