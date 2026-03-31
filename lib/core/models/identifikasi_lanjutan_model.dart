@@ -1,13 +1,15 @@
 class IdentifikasiLanjutanModel {
   final int? idIdentifikasi;
   final int idPenyakit;
-  final String pathGambar;
+  final int urutan;
+  final String descLangkah;
 
   // Constructor utama untuk membuat objek Identifikasi Lanjutan
   IdentifikasiLanjutanModel({
     this.idIdentifikasi,
     required this.idPenyakit,
-    required this.pathGambar,
+    required this.urutan,
+    required this.descLangkah,
   });
 
   // Constructor khusus untuk mengubah data dari SQLite (Map) menjadi objek yang bisa diproses oleh Flutter
@@ -15,7 +17,8 @@ class IdentifikasiLanjutanModel {
     return IdentifikasiLanjutanModel(
       idIdentifikasi: map['id_identifikasi'],
       idPenyakit: map['id_penyakit'],
-      pathGambar: map['path_gambar'],
+      urutan: map['urutan'],
+      descLangkah: map['desc_langkah'],
     );
   }
 
@@ -24,7 +27,8 @@ class IdentifikasiLanjutanModel {
     return {
       'id_identifikasi': idIdentifikasi,
       'id_penyakit': idPenyakit,
-      'path_gambar': pathGambar,
+      'urutan': urutan,
+      'desc_langkah': descLangkah,
     };
   }
 }
