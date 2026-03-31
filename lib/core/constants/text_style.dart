@@ -44,6 +44,13 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
+  static const TextStyle nameApp = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 27,
+    fontWeight: FontWeight.w800,
+    color: AppColors.mysticJade,
+  );
+
   // -- POPPINS FONT FAMILY --
 
   // Text style for bottom navbar
