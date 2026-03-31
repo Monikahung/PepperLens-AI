@@ -1,122 +1,149 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pepperlens_ai/core/constants/assets.dart';
+import 'package:pepperlens_ai/core/constants/colors.dart';
+import 'package:pepperlens_ai/core/constants/text_style.dart';
+import 'package:pepperlens_ai/core/database/database_helper.dart';
+import 'package:pepperlens_ai/features/home/presentation/home_page.dart';
 
-void main() {
+void main() async {
+  // Inisialisasi Flutter sebelum menjalankan operasi asynchronous
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Pesan database sedang diinisialisasi
+    debugPrint('Sedang menginisialisasi database saat Splash Screen...');
+
+    // Panggil getter database untuk memicu _onCreate dan Seeding
+    await DatabaseHelper().database;
+
+    // Jika berhasil, cetak pesan sukses
+    debugPrint('Database berhasil dimuat');
+  } catch (e) {
+    // Jika terjadi error, cetak pesan error
+    debugPrint('Gagal menginisialisasi database: $e');
+  }
+
+  // Jalankan aplikasi utama
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  // Widget ini adalah root dari aplikasi
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    // Mengatur warna status bar dan navigasi sistem Android
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Atur sesuai tema aplikasi
+      value: SystemUiOverlayStyle(
+        statusBarColor: AppColors.honeydew,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.honeydew,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      child: MaterialApp(
+        title: 'Pepperlens AI',
+
+        // Matikan banner debug di pojok kanan atas
+        debugShowCheckedModeBanner: false,
+
+        // Konfigurasi tema global aplikasi
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.mysticJade),
+          scaffoldBackgroundColor: AppColors.honeydew,
+        ),
+
+        // Tampilkan halaman logo saat aplikasi dimulai
+        home: const LogoPage(),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// Halaman menampilkan logo dan nama aplikasi saat dibuka
+class LogoPage extends StatefulWidget {
+  // Konstruktor untuk LogoPage
+  const LogoPage({super.key});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+  // Buat state untuk LogoPage
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<LogoPage> createState() => _LogoPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+// State untuk menangani logika tampilan logo dan navigasi
+class _LogoPageState extends State<LogoPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Simulasi delay untuk menampilkan logo selama 3 detik
+    Future.delayed(const Duration(seconds: 3), () {
+      // Cek apakah halaman ini masih ada di layar
+      if (!mounted) return;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      // Jika masih ada di layar, navigasi ke halaman beranda aplikasi
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
     });
   }
 
+  // Bangun tampilan halaman logo
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      backgroundColor: AppColors.honeydew,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              // Area logo aplikasi dengan rasio aspek 1:1
+              Flexible(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 96.0),
+                  child: AspectRatio(
+                    aspectRatio: 1 / 1,
+                    child: Image.asset(
+                      AppAssets.logoPepperLensAI,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Jika terjadi error saat memuat gambar, tampilkan pesan error
+                        return const Text("Gagal memuat logo");
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              // Jarak vertikal antara logo dan nama aplikasi
+              const SizedBox(height: 16),
+
+              // Area nama aplikasi dengan gaya teks khusus
+              Flexible(
+                flex: 1,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    "PepperLens AI",
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.nameApp,
+                  ),
+                ),
+              ),
+
+              // Jarak vertikal tambahan di bawah nama aplikasi
+              const Flexible(flex: 1, child: SizedBox(height: 64)),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
