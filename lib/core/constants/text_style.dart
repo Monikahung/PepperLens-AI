@@ -1,50 +1,45 @@
 import 'package:flutter/material.dart';
-import 'colors.dart'; // Import AppColors to use costum palette
+import 'colors.dart';
 
 class AppTextStyles {
   // -- MANROPE FONT FAMILY --
 
-  // Standar body text for paragraphs or long content
-  static const TextStyle bodyManrope = TextStyle(
+  static const TextStyle manropeOne = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.darkCyan,
   );
 
-  // Text style for sub title detail information
-  static const TextStyle subtitleManrope = TextStyle(
+  static const TextStyle manropeTwo = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 16,
     fontWeight: FontWeight.w700,
     color: AppColors.honeydew,
   );
 
-  // Text style for title menus, name disease in detail information
-  static const TextStyle titleMenu = TextStyle(
+  static const TextStyle manropeThree = TextStyle(
     fontFamily: 'Manrope',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
     color: AppColors.darkCyan,
   );
 
-  // Text style for disease results detection
-  static const TextStyle titleResultDisease = TextStyle(
+  static const TextStyle manropeFour = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 18,
     fontWeight: FontWeight.w700,
     color: AppColors.honeydew,
   );
 
-  // Text style for large title page and welcome text
-  static const TextStyle titleManrope = TextStyle(
+  static const TextStyle manropeFive = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 27,
     fontWeight: FontWeight.w700,
     color: AppColors.darkCyan,
   );
 
-  static const TextStyle nameApp = TextStyle(
+  static const TextStyle manropeSix = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 27,
     fontWeight: FontWeight.w800,
@@ -53,16 +48,14 @@ class AppTextStyles {
 
   // -- POPPINS FONT FAMILY --
 
-  // Text style for bottom navbar
-  static const TextStyle textNavbar = TextStyle(
+  static const TextStyle poppinsOne = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: AppColors.honeydew,
   );
 
-  // Text style for english name disease
-  static const TextStyle bodyItalicPoppins = TextStyle(
+  static const TextStyle poppinsTwo = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 12,
     fontWeight: FontWeight.w400,
@@ -70,18 +63,16 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Text style for sub title welcome
-  static const TextStyle subtitlePoppins = TextStyle(
+  static const TextStyle poppinsThree = TextStyle(
     fontFamily: 'Poppins',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.darkCyan,
   );
 
-  // Text style for banner, text "Menu", title detail information
-  static const TextStyle titleContentPoppins = TextStyle(
+  static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.honeydew,
   );
