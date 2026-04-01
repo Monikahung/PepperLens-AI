@@ -27,6 +27,7 @@ flutter:
   # Register local image assets
   assets:
     - assets/images/
+    - assets/images/disease_images/
 
   # Define costum fonts for the application
   fonts:
