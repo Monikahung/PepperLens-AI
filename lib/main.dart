@@ -4,7 +4,7 @@ import 'package:pepperlens_ai/core/constants/assets.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/database/database_helper.dart';
-import 'package:pepperlens_ai/features/home/presentation/home_page.dart';
+import 'package:pepperlens_ai/features/home/presentation/pages/home_page.dart';
 
 void main() async {
   // Inisialisasi Flutter sebelum menjalankan operasi asynchronous
@@ -133,7 +133,7 @@ class _LogoPageState extends State<LogoPage> {
                   child: Text(
                     "PepperLens AI",
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.nameApp,
+                    style: AppTextStyles.manropeSix,
                   ),
                 ),
               ),
