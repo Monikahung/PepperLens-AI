@@ -53,6 +53,8 @@ class MenuCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Jarak teks menu dan ikon panah
+            const SizedBox(width: 5,),
             // Ikon panah
             const Icon(
               Icons.arrow_forward_ios,
