@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/widgets/banner.dart';
 import 'package:pepperlens_ai/core/widgets/navbar.dart';
 import 'package:pepperlens_ai/core/constants/assets.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
+import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_page.dart';
 import 'package:pepperlens_ai/features/home/presentation/widgets/menu_card.dart';
 
 // Halaman beranda utama aplikasi
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  // Variabel untuk menyimpan indeks item navbar yang aktif
-  int _currentIndex = 0;
+  final NavigationController navBarController = Get.put(NavigationController());
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +39,17 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         backgroundColor: AppColors.honeydew,
 
-        // Body akan berganti sesuai _currentIndex
-        body: pages[_currentIndex],
+        // Obx membuat body otomatis update saat selectedIndex di controller berubah
+        body: Obx(() => pages[navBarController.selectedIndex.value]),
 
-        // Navbar dengan sinkronisasi indeks yang aktif
-        bottomNavigationBar: CustomNavbar(
-          // Indeks item navbar yang aktif saat ini
-          selectedIndex: _currentIndex,
-          // Fungsi callback saat item navbar ditekan
-          onItemTapped: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
+        // Navbar menggunakan Obx
+        bottomNavigationBar: Obx(
+          () => CustomNavbar(
+            selectedIndex: navBarController.selectedIndex.value,
+            onItemTapped: (index) {
+              navBarController.changeIndex(index);
+            },
+          ),
         ),
       ),
     );
@@ -150,7 +144,7 @@ class _HomePageState extends State<HomePage> {
                       title: "Deteksi",
                       subtitle:
                           "Deteksi penyakit tanaman lada berbasis citra daun",
-                      onTap: () => debugPrint("Ke Deteksi"),
+                      onTap: () => navBarController.changeIndex(2),
                     ),
 
                     // Jarak vertikal antar menu
@@ -161,7 +155,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.menu_book,
                       title: "Ensiklopedia",
                       subtitle: "Informasi mengenai penyakit tanaman lada",
-                      onTap: () => debugPrint("Ke Ensiklopedia"),
+                      onTap: () => navBarController.changeIndex(1),
                     ),
 
                     // Jarak vertikal antar menu
@@ -172,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.history,
                       title: "Riwayat",
                       subtitle: "Rekam hasil deteksi dan visualisasi diagram",
-                      onTap: () => debugPrint("Ke Riwayat"),
+                      onTap: () => navBarController.changeIndex(3),
                     ),
                   ],
                 ),
