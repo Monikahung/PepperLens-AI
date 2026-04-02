@@ -12,10 +12,11 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
+  // Teks untuk deskripsi penyakit ensiklopedia
   static const TextStyle manropeTwo = TextStyle(
     fontFamily: 'Manrope',
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
     color: AppColors.honeydew,
   );
 
@@ -27,9 +28,10 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
+  // Teks untuk judul penyakit ensiklopedia
   static const TextStyle manropeFour = TextStyle(
     fontFamily: 'Manrope',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.w700,
     color: AppColors.honeydew,
   );
