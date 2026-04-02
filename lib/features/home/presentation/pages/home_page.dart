@@ -40,7 +40,20 @@ class HomePage extends StatelessWidget {
         backgroundColor: AppColors.honeydew,
 
         // Obx membuat body otomatis update saat selectedIndex di controller berubah
-        body: Obx(() => pages[navBarController.selectedIndex.value]),
+        body: Obx(() {
+          return AnimatedSwitcher(
+            // Durasi transisi
+            duration: const Duration(milliseconds: 300),
+
+            // Efek transisi FadeTransition
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+
+            // Halaman yang ditampilkan berdasarkan index
+            child: pages[navBarController.selectedIndex.value],
+          );
+        }),
 
         // Navbar menggunakan Obx
         bottomNavigationBar: Obx(

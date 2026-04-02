@@ -26,7 +26,8 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
       // Teks 'Ensiklopedia' di bagian atas halaman
       appBar: AppBar(
         title: const Text("Ensiklopedia", style: AppTextStyles.manropeFive),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.honeydew,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         systemOverlayStyle: const SystemUiOverlayStyle(
@@ -92,10 +93,19 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
                   // Masuk ke halaman encyclopedia detail page
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => EncyclopediaDetailPage(
-                        diseaseId: item['id_penyakit'],
-                      ),
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(microseconds: 300),
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          EncyclopediaDetailPage(
+                            diseaseId: item['id_penyakit'],
+                          ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
                     ),
                   );
                 },
