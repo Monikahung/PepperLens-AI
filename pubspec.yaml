@@ -19,6 +19,15 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# Configuration flutter_launcher_icons to generate app icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#F8FAF8"
+  adaptive_icon_foreground: "assets/images/logo.png"
 
 flutter:
   # Enable Material Design components and icons

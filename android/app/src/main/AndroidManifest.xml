@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <application
-        android:label="pepperlens_ai"
+        android:label="PepperLens AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
