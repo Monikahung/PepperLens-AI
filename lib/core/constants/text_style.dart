@@ -4,7 +4,7 @@ import 'colors.dart';
 class AppTextStyles {
   // -- MANROPE FONT FAMILY --
 
-  // Teks untuk sub judul menu
+  // Teks untuk sub judul menu, teks error
   static const TextStyle manropeOne = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
