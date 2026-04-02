@@ -4,6 +4,7 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/widgets/encyclopedia_card.dart';
 import 'package:pepperlens_ai/features/encyclopedia/data/repositories/encyclopedia_repository.dart';
+import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_detail_page.dart';
 
 // Halaman ensiklopedia yang menampilkan daftar penyakit
 class EncyclopediaPage extends StatefulWidget {
@@ -88,7 +89,15 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
                 imagePath: item['path_gambar'] ?? '',
                 // Jika diklik, dialihkan ke halaman ini
                 onTap: () {
-                  debugPrint("Klik Penyakit ID: ${item['id_penyakit']}");
+                  // Masuk ke halaman encyclopedia detail page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EncyclopediaDetailPage(
+                        diseaseId: item['id_penyakit'],
+                      ),
+                    ),
+                  );
                 },
               );
             },
