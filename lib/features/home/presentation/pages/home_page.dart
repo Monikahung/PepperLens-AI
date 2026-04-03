@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
         body: Obx(() {
           return AnimatedSwitcher(
             // Durasi transisi
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 100),
 
             // Efek transisi FadeTransition
             transitionBuilder: (Widget child, Animation<double> animation) {

@@ -94,17 +94,14 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      transitionDuration: const Duration(microseconds: 300),
+                      transitionDuration: const Duration(microseconds: 100),
                       pageBuilder: (context, animation, secondaryAnimation) =>
                           EncyclopediaDetailPage(
                             diseaseId: item['id_penyakit'],
                           ),
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
+                            return child;
                           },
                     ),
                   );
