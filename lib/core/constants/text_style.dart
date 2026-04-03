@@ -12,7 +12,7 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk deskripsi penyakit ensiklopedia
+  // Teks untuk deskripsi penyakit ensiklopedia, teks error
   static const TextStyle manropeTwo = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -52,6 +52,38 @@ class AppTextStyles {
     color: AppColors.mysticJade,
   );
 
+  // Teks untuk judul content di accordion
+  static const TextStyle manropeSeven = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w800,
+    color: AppColors.honeydew,
+  );
+
+  // Teks untuk nama penyakit di halaman detail penyakit
+  static const TextStyle manropeEight = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.darkCyan,
+  );
+
+  // Teks untuk deskripsi penyakit di halaman detail penyakit
+  static const TextStyle manropeNine = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.darkCyan,
+  );
+
+  // Teks untuk deskripsi widget di detail penyakit
+  static const TextStyle manropeTen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.honeydew,
+  );
+
   // -- POPPINS FONT FAMILY --
 
   // Teks untuk label navbar
@@ -62,6 +94,7 @@ class AppTextStyles {
     color: AppColors.honeydew,
   );
 
+  // Teks untuk nama inggris dari penyakit
   static const TextStyle poppinsTwo = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 12,
@@ -78,7 +111,7 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk banner dan 'Menu Utama'
+  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion
   static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
