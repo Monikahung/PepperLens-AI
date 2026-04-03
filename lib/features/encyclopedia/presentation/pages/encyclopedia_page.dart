@@ -27,7 +27,7 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
       appBar: AppBar(
         title: const Text("Ensiklopedia", style: AppTextStyles.manropeFive),
         backgroundColor: AppColors.honeydew,
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         elevation: 0,
         centerTitle: true,
         systemOverlayStyle: const SystemUiOverlayStyle(
