@@ -8,6 +8,7 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_page.dart';
+import 'package:pepperlens_ai/features/detection/presentation/pages/scan_camera_page.dart';
 import 'package:pepperlens_ai/features/home/presentation/widgets/menu_card.dart';
 
 // Halaman beranda utama aplikasi
@@ -20,55 +21,100 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // List untuk isi aplikasi
     final List<Widget> pages = [
-      _buildHomeContent(),
+      _buildHomeContent(context),
       const EncyclopediaPage(),
-      const Center(child: Text("Halaman Deteksi")),
+      const SizedBox.shrink(),
       const Center(child: Text("Halaman Riwayat")),
       const Center(child: Text("Halaman Panduan")),
     ];
 
-    // AnnotatedRegion untuk mengontrol tampilan status bar dan navigasi sistem
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: AppColors.honeydew,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: AppColors.mysticJade,
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: AppColors.honeydew,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
 
-        // Obx membuat body otomatis update saat selectedIndex di controller berubah
-        body: Obx(() {
-          return AnimatedSwitcher(
-            // Durasi transisi
-            duration: const Duration(milliseconds: 100),
+        // Ambil indeks saat ini
+        int currentIndex = navBarController.selectedIndex.value;
 
-            // Efek transisi FadeTransition
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+        // Jika sedang tidak di beranda, kembalikan ke beranda
+        if (currentIndex != 0) {
+          navBarController.changeIndex(0);
+        }
+        // Jika sudah di beranda, keluar dari aplikasi
+        else {
+          SystemNavigator.pop();
+        }
+      },
+      // AnnotatedRegion untuk mengontrol tampilan status bar dan navigasi sistem
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: AppColors.honeydew,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+          systemNavigationBarColor: AppColors.mysticJade,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          backgroundColor: AppColors.honeydew,
 
-            // Halaman yang ditampilkan berdasarkan index
-            child: pages[navBarController.selectedIndex.value],
-          );
-        }),
+          // Obx membuat body otomatis update saat selectedIndex di controller berubah
+          body: Obx(() {
+            // Ambil nilai indeks navigas yang sedang aktif
+            int currentIndex = navBarController.selectedIndex.value;
 
-        // Navbar menggunakan Obx
-        bottomNavigationBar: Obx(
-          () => CustomNavbar(
-            selectedIndex: navBarController.selectedIndex.value,
-            onItemTapped: (index) {
-              navBarController.changeIndex(index);
-            },
+            // Tentukan indeks halaman yang akan dirender
+            int displayIndex;
+
+            // Jika indeks 2 atau fitur deteksi
+            if (currentIndex == 2) {
+              displayIndex = navBarController.previousIndex.value;
+            }
+            // Jika indeks yang diterima di luar jangkauan list 'pages'
+            else if (currentIndex >= pages.length) {
+              displayIndex = 0;
+            }
+            // Jika indeks berada di jalur normal
+            else {
+              displayIndex = currentIndex;
+            }
+
+            return AnimatedSwitcher(
+              // Durasi transisi perpindahan halaman
+              duration: const Duration(milliseconds: 100),
+              child: pages[displayIndex],
+            );
+          }),
+
+          // Navbar menggunakan Obx
+          bottomNavigationBar: Obx(
+            () => CustomNavbar(
+              selectedIndex: navBarController.selectedIndex.value,
+              onItemTapped: (index) {
+                // Jika indeks 2 atau fitur deteksi
+                if (index == 2) {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      opaque: true,
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                      pageBuilder: (context, _, __) => const ScanCameraPage(),
+                    ),
+                  );
+                } else {
+                  // Jika indeks selain fitur deteksi
+                  navBarController.changeIndex(index);
+                }
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHomeContent() {
+  // Widget untuk membuat content dari halaman beranda
+  Widget _buildHomeContent(BuildContext context) {
     // SafeArea untuk memastikan konten tidak tertutup oleh status bar atau notch
     return SafeArea(
       // Antisipasi supaya jika content melebihi tinggi layar, bisa di-scroll
@@ -157,7 +203,18 @@ class HomePage extends StatelessWidget {
                       title: "Deteksi",
                       subtitle:
                           "Deteksi penyakit tanaman lada berbasis citra daun",
-                      onTap: () => navBarController.changeIndex(2),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            opaque: true,
+                            transitionDuration: Duration.zero,
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const ScanCameraPage(),
+                          ),
+                        );
+                      },
                     ),
 
                     // Jarak vertikal antar menu
