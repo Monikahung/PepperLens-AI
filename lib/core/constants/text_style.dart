@@ -84,6 +84,14 @@ class AppTextStyles {
     color: AppColors.honeydew,
   );
 
+  // Teks untuk keterangan di halaman ambil gambar
+  static const TextStyle manropeEleven = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.honeydew,
+  );
+
   // -- POPPINS FONT FAMILY --
 
   // Teks untuk label navbar
