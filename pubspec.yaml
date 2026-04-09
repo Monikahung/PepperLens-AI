@@ -18,6 +18,8 @@ dependencies:
   image_picker: ^1.2.1
   path_provider: ^2.1.5
   opencv_dart: ^1.4.5
+  gal: ^2.3.2
+  tflite_flutter: ^0.12.1
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +43,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/disease_images/
+    - assets/model/best_float32.tflite
 
   # Define costum fonts for the application
   fonts:
