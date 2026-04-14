@@ -149,4 +149,27 @@ class DatabaseHelper {
       }
     });
   }
+
+  // Simpan hasil deteksi beserta koordinat bounding box
+  Future<int> insertResultDetectionComplete(
+    Map<String, dynamic> resultMap,
+    List<Map<String, dynamic>> detailsList,
+  ) async {
+    // Buka database
+    final db = await database;
+
+    return await db.transaction((txn) async {
+      // Simpan hasil deteksi
+      int idResult = await txn.insert('Hasil_Deteksi', resultMap);
+
+      // Simpan detail deteksi
+      for (var detail in detailsList) {
+        detail['id_hasil_deteksi'] = idResult;
+        await txn.insert('Detail_Deteksi', detail);
+      }
+
+      // Kembalikan id hasil deteksi
+      return idResult;
+    });
+  }
 }
