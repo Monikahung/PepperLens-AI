@@ -12,8 +12,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
+import 'package:pepperlens_ai/features/detection/data/detection_repository.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/camera_exposure_controller.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/focus_marker_painter.dart';
+import 'package:pepperlens_ai/features/detection/presentation/pages/detection_result_page.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 // Halaman utama untuk menampilkan ambil gambar menggunakan kamera maupun upload gambar dari penyimpanan
@@ -58,6 +60,9 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
   // Image picker untuk ambil gambar dari galeri
   final ImagePicker _picker = ImagePicker();
+
+  // Variabel pengunci picker
+  bool _isPickerActive = false;
 
   // Label penyakit
   final List<String> _pepperLabels = ["BPB", "Hawar", "Keriting", "Kuning"];
@@ -173,19 +178,148 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
     _controller!.setZoomLevel(newZoomLevel);
   }
 
-  // Ambil gambar dari galeri
-  Future<void> _pickImageFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  // Ambil gambar dari galeri dan proses gambar hingga terdeteksi penyakit
+  Future<void> _pickImageFromGalleryAndProcessing() async {
+    if (_isPickerActive) return;
 
-    // Jika pengguna memilih gambar
-    if (image != null) {
-      debugPrint("Gambar dipilih: ${image.path}");
+    // Mulai hitung waktu
+    Stopwatch stopwatch = Stopwatch()..start();
+
+    try {
+      _isPickerActive = true;
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 100,
+      );
+
+      // Jika gambar tidak ditemukan
+      if (image == null) {
+        _isPickerActive = false;
+        return;
+      }
+
+      setState(() {
+        _isProcessing = true;
+        _errorMessage = null;
+        _loadingMessage = "Membaca gambar";
+      });
+
+      // Alamat path gambar
+      final String sourcePath = image.path;
+      setState(() => _loadingMessage = "Memproses gambar");
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Validasi kualitas gambar
+      await _validateImageQuality(sourcePath);
+
+      // Ambil resolusi asli gambar
+      cv.Mat matSize = cv.imread(sourcePath);
+      int originalW = matSize.cols;
+      int originalH = matSize.rows;
+      matSize.release();
+
+      // Simpan gambar mentah ke internal (kompresi 70%)
+      setState(() => _loadingMessage = "Mengamankan data asli");
+      final directory = await getApplicationDocumentsDirectory();
+      final String internalPath =
+          '${directory.path}/mentah_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      cv.Mat matRaw = cv.imread(sourcePath);
+      cv.imwrite(
+        internalPath,
+        matRaw,
+        params: cv.VecI32.fromList([cv.IMWRITE_JPEG_QUALITY, 70]),
+      );
+      matRaw.release();
+
+      // Tahap pre-processing gambar
+      setState(() => _loadingMessage = "Menyiapkan data AI");
+      final inputData = await preProcessYOLO(sourcePath);
+
+      // Tahap inference
+      setState(() => _loadingMessage = "Mendeteksi Penyakit");
+      List<Map<String, dynamic>> results = await _runInference(
+        inputData,
+        originalW,
+        originalH,
+      );
+
+      // Tahap penyimpanan hasil
+      setState(() => _loadingMessage = "Menyimpan ke galeri");
+      cv.Mat matResult = cv.imread(sourcePath);
+      _drawBoundingBoxes(matResult, results);
+
+      final String resultPath =
+          '${directory.path}/hasil_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      cv.imwrite(
+        resultPath,
+        matResult,
+        params: cv.VecI32.fromList([cv.IMWRITE_JPEG_QUALITY, 95]),
+      );
+
+      await Gal.putImage(resultPath, album: 'PepperLens AI');
+      matResult.release();
+
+      // Hentikan hitung waktu
+      stopwatch.stop();
+
+      // Konversi ke detik
+      double timeProcess = stopwatch.elapsedMilliseconds / 1000.0;
+
+      // Tahap penyimpanan sqlite
+      setState(() => _loadingMessage = "Mencatat hasil deteksi");
+      final repo = DetectionRepository();
+
+      int idNewResult = await repo.insertResultDetectionToDatabase(
+        pathOriginal: internalPath,
+        pathResult: resultPath,
+        timeProcess: timeProcess,
+        yoloResults: results,
+      );
+
+      // Navigasi ke halaman hasil deteksi
+      if (mounted) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 100),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                DetectionResultPage(idResult: idNewResult),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return child;
+                },
+          ),
+        );
+      }
+
+      setState(() => _isProcessing = false);
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        _isProcessing = false;
+        _errorMessage = e.toString();
+      });
+
+      // Hilangkan pesan error setelah 3 detik
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => _errorMessage = null);
+        }
+      });
+    } finally {
+      _isPickerActive = false;
     }
   }
 
-  // Potret objek dan crop gambar
+  // Potret objek dan crop gambar dan proses gambar hingga terdeteksi penyakit
   Future<void> _takePictureAndProcessing() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
+
+    // Mulai hitung waktu
+    Stopwatch stopwatch = Stopwatch()..start();
 
     try {
       setState(() {
@@ -198,14 +332,18 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       final XFile rawImage = await _controller!.takePicture();
       final String cachePath = rawImage.path;
 
-      debugPrint("Foto asli diambil: $cachePath");
-
       // Jeda agar file siap diakses
       setState(() => _loadingMessage = "Memproses gambar");
       await Future.delayed(const Duration(milliseconds: 100));
 
       // Validasi kualitas gambar
       await _validateImageQuality(cachePath);
+
+      // Ambil resolusi asli gambar
+      cv.Mat matSize = cv.imread(cachePath);
+      int originalW = matSize.cols;
+      int originalH = matSize.rows;
+      matSize.release();
 
       // Simpan gambar mentah ke internal (kompresi 70%)
       setState(() => _loadingMessage = "Mengamankan data asli");
@@ -227,7 +365,11 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
       // Tahap inference
       setState(() => _loadingMessage = "Mendeteksi Penyakit");
-      List<Map<String, dynamic>> results = await _runInference(inputData);
+      List<Map<String, dynamic>> results = await _runInference(
+        inputData,
+        originalW,
+        originalH,
+      );
 
       // Tahap penyimpanan hasil
       setState(() => _loadingMessage = "Menyimpan ke galeri");
@@ -246,14 +388,41 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       await Gal.putImage(resultCachePath, album: 'PepperLens AI');
       matResult.release();
 
-      debugPrint("Data mentah tersimpan di internal: $internalPath");
-      debugPrint("Hasil deteksi tersimpan di galeri");
+      // Hentikan hitung waktu
+      stopwatch.stop();
+
+      // Konversi ke detik
+      double timeProcess = stopwatch.elapsedMilliseconds / 1000.0;
+
+      // Tahap penyimpanan sqlite
+      setState(() => _loadingMessage = "Mencatat hasil deteksi");
+      final repo = DetectionRepository();
+
+      int idNewResult = await repo.insertResultDetectionToDatabase(
+        pathOriginal: internalPath,
+        pathResult: resultCachePath,
+        timeProcess: timeProcess,
+        yoloResults: results,
+      );
+
+      // Navigasi ke halaman hasil deteksi
+      if (mounted) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 100),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                DetectionResultPage(idResult: idNewResult),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return child;
+                },
+          ),
+        );
+      }
 
       // Bersihkan cache
       if (await File(cachePath).exists()) await File(cachePath).delete();
-      if (await File(resultCachePath).exists()) {
-        await File(resultCachePath).delete();
-      }
 
       setState(() => _isProcessing = false);
     } catch (e) {
@@ -288,10 +457,9 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       mat = cv.imread(path);
       if (mat.isEmpty) throw "Gagal membaca gambar";
 
-      // Jika lebar di bawah 768 px atau tinggi di bawah 1024 px
-      debugPrint("Resolusi: ${mat.cols}x${mat.rows}");
-      if (mat.width < 768 || mat.height < 1024) {
-        throw "Resolusi gambar terlalu kecil\nMinimal 768x1024px";
+      // Jika lebar di bawah 640 px atau tinggi di bawah 640 px
+      if (mat.width < 640 || mat.height < 640) {
+        throw "Resolusi gambar terlalu kecil\nMinimal 640x640px";
       }
 
       // CEK PENCAHAYAAN (LUMINANCE)
@@ -305,10 +473,10 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       final meanValue = cv.mean(gray);
       double avgLuminance = meanValue.val[0];
 
-      // Jika threshold di bawah 40 (gelap)
-      if (avgLuminance < 40) throw "Gambar terlalu gelap";
-      // Jika threshold di atas 230 (silau)
-      if (avgLuminance > 230) throw "Gambar terlalu terang";
+      // Jika threshold di bawah 30 (gelap)
+      if (avgLuminance < 30) throw "Gambar terlalu gelap";
+      // Jika threshold di atas 240 (silau)
+      if (avgLuminance > 240) throw "Gambar terlalu terang";
 
       // CEK BLUR (LAPLACIAN VARIANCE)
       setState(() => _loadingMessage = "Menganalisis fokus gambar");
@@ -319,8 +487,8 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       final (_, stddev) = cv.meanStdDev(laplacian);
       double blurScore = stddev.val[0] * stddev.val[0];
 
-      // Jika threshold di bawah 100 (blur)
-      if (blurScore < 100) throw "Gambar terlalu blur";
+      // Jika threshold di bawah 40 (blur)
+      if (blurScore < 40) throw "Gambar terlalu blur";
 
       // Jika berhasil lolos ketiga validasi tersebut
       setState(() => _loadingMessage = "Lolos cek kualitas");
@@ -339,60 +507,68 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
   // Pre-processing gambar
   Future<Uint8List> preProcessYOLO(String imagePath) async {
-    // Ambil gambar asli
-    final mat = cv.imread(imagePath);
+    // Deklarasi variabel pembersihan memori
+    cv.Mat? mat;
+    cv.Mat? resized;
+    cv.Mat? letterboxed;
+    cv.Mat? rgbMat;
+    cv.Mat? normalized;
 
-    int targetSize = 640;
-    int w = mat.cols;
-    int h = mat.rows;
+    try {
+      // Ambil gambar asli
+      mat = cv.imread(imagePath);
+      if (mat.isEmpty) throw "Gagal membaca gambar";
 
-    // Hitung rasio (letterboxing)
-    double r = targetSize / (w > h ? w : h);
-    int newW = (w * r).round();
-    int newH = (h * r).round();
+      int targetSize = 640;
+      int w = mat.cols;
+      int h = mat.rows;
 
-    // Resize dengan tetap menjaga rasio gambar asli
-    final resized = cv.resize(mat, (
-      newW,
-      newH,
-    ), interpolation: cv.INTER_LINEAR);
+      // Hitung rasio (letterboxing)
+      double r = targetSize / (w > h ? w : h);
+      int newW = (w * r).round();
+      int newH = (h * r).round();
 
-    // Tambahkan padding hitam agar ukurannya 640x640
-    int top = (targetSize - newH) ~/ 2;
-    int bottom = targetSize - newH - top;
-    int left = (targetSize - newW) ~/ 2;
-    int right = targetSize - newW - left;
+      // Resize dengan tetap menjaga rasio gambar asli
+      resized = cv.resize(mat, (newW, newH), interpolation: cv.INTER_AREA);
 
-    final letterboxed = cv.copyMakeBorder(
-      resized,
-      top,
-      bottom,
-      left,
-      right,
-      cv.BORDER_CONSTANT,
-      value: cv.Scalar(0, 0, 0),
-    );
+      // Tambahkan padding hitam agar ukurannya 640x640
+      int top = (targetSize - newH) ~/ 2;
+      int bottom = targetSize - newH - top;
+      int left = (targetSize - newW) ~/ 2;
+      int right = targetSize - newW - left;
 
-    // Konversi warna BGR ke RGB
-    final rgbMat = cv.cvtColor(letterboxed, cv.COLOR_BGR2RGB);
+      letterboxed = cv.copyMakeBorder(
+        resized,
+        top,
+        bottom,
+        left,
+        right,
+        cv.BORDER_CONSTANT,
+        value: cv.Scalar(114, 114, 114),
+      );
 
-    // Normalisasi dan konversi ke float32 (0.0 - 1.0)
-    final normalized = rgbMat.convertTo(
-      cv.MatType.CV_32FC3,
-      alpha: 1.0 / 255.0,
-    );
+      // Konversi warna BGR ke RGB
+      rgbMat = cv.cvtColor(letterboxed, cv.COLOR_BGR2RGB);
 
-    // Ambil data mentah untuk dimasukkan ke interpreter tflite
-    final inputData = normalized.data;
+      // Normalisasi dan konversi ke float32 (0.0 - 1.0)
+      normalized = rgbMat.convertTo(cv.MatType.CV_32FC3, alpha: 1.0 / 255.0);
 
-    // Bersihkan memori
-    mat.release();
-    resized.release();
-    letterboxed.release();
-    rgbMat.release();
-    normalized.release();
+      // Ambil data mentah dengan tipe Float32
+      final inputData = normalized.data.sublist(0);
 
-    return inputData;
+      // Kembalikan sebagai Float32List
+      return inputData;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    } finally {
+      // Bersihkan memori
+      mat?.release();
+      resized?.release();
+      letterboxed?.release();
+      rgbMat?.release();
+      normalized?.release();
+    }
   }
 
   // Load model AI
@@ -411,7 +587,11 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
   }
 
   // Inference
-  Future<List<Map<String, dynamic>>> _runInference(Uint8List inputData) async {
+  Future<List<Map<String, dynamic>>> _runInference(
+    Uint8List inputData,
+    int imgW,
+    int imgH,
+  ) async {
     if (_interpreter == null) throw "Mesin AI belum siap";
 
     // Siapkan variabel output sesuai arsitektur YOLOv11
@@ -423,8 +603,8 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
     // Olah hasil output (saring skor tinggi dan mapping koordinat)
     List<Map<String, dynamic>> finalResults = _processYOLOOutput(
       output[0],
-      3120,
-      4160,
+      imgW,
+      imgH,
     );
 
     return finalResults;
@@ -449,8 +629,10 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
       // Cari skor tertinggi
       for (int j = 4; j < 8; j++) {
-        if (rawOutput[j][i] > maxScore) {
-          maxScore = rawOutput[j][i];
+        double currentRawScore = rawOutput[j][i];
+
+        if (currentRawScore > maxScore) {
+          maxScore = currentRawScore;
           classId = j - 4;
         }
       }
@@ -470,21 +652,23 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
           double height = rawOutput[3][i] * 640;
 
           // Balikkan ke koordinat gambar asli
-          double x1 = (centerX - padX) / gain;
-          double y1 = (centerY - padY) / gain;
+          double x1 = ((centerX - (width / 2)) - padX) / gain;
+          double y1 = ((centerY - (height / 2)) - padY) / gain;
           double wOriginal = width / gain;
           double hOriginal = height / gain;
 
           detections.add({
-            "x": (x1 - wOriginal / 2).toInt(),
-            "y": (y1 - hOriginal / 2).toInt(),
-            "w": wOriginal.toInt(),
-            "h": hOriginal.toInt(),
+            "x": x1.toInt().clamp(0, imgW),
+            "y": y1.toInt().clamp(0, imgH),
+            "w": wOriginal.toInt().clamp(0, imgW),
+            "h": hOriginal.toInt().clamp(0, imgH),
             "score": (maxScore * 100).toInt(),
             "label": _pepperLabels[classId],
           });
 
-          debugPrint("Penyakit: ${_pepperLabels[classId]} Skor: ${(maxScore * 100).toStringAsFixed(0)}%");
+          debugPrint(
+            "Penyakit: ${_pepperLabels[classId]} Skor: ${(maxScore * 100).toStringAsFixed(0)}%",
+          );
         }
       }
     }
@@ -556,16 +740,54 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
     return intersectionArea / unionArea;
   }
 
+  // Ambil warna berdasarkan label penyakit (format BGR)
+  cv.Scalar _getColorByLabel(String label) {
+    switch (label) {
+      case "BPB":
+        return cv.Scalar(0, 0, 255);
+      case "Hawar":
+        return cv.Scalar(255, 0, 255);
+      case "Keriting":
+        return cv.Scalar(255, 255, 0);
+      case "Kuning":
+        return cv.Scalar(255, 255, 255);
+      default:
+        return cv.Scalar(0, 255, 0);
+    }
+  }
+
   // Gambar kotak di sekitar objek yang terdeteksi
   void _drawBoundingBoxes(cv.Mat mat, List<Map<String, dynamic>> results) {
     debugPrint("Menggambar ${results.length} kotak ke matriks");
+    if (results.isEmpty) return;
+
+    // Ambil resolusi gambar asli
+    final int imgW = mat.cols;
+    final int imgH = mat.rows;
+    final int maxDim = imgW > imgH ? imgW : imgH;
+
+    // Hitung skala ketebalan garis
+    final int lineThickness = (maxDim / 120).clamp(4, 35).toInt();
+
+    // Hitung skala font
+    final double fontScale = (maxDim / 720).clamp(1.0, 10.0);
+
+    // Hitung ketebalan font
+    final int fontThickness = (lineThickness * 0.8).clamp(2, 25).toInt();
+
+    // Hitung offset teks
+    final int textOffset = (lineThickness * 2.2).toInt();
+
     for (var res in results) {
+      // Ambil warna sesuai label hasil deteksi
+      final color = _getColorByLabel(res['label']);
+
       // Gambar kotak
       cv.rectangle(
         mat,
         cv.Rect(res['x'], res['y'], res['w'], res['h']),
-        cv.Scalar(0, 0, 255),
-        thickness: 15,
+        color,
+        thickness: lineThickness,
       );
 
       // Siapkan teks label dan skor (%)
@@ -575,11 +797,11 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       cv.putText(
         mat,
         labelText,
-        cv.Point(res['x'], res['y'] - 20),
+        cv.Point(res['x'], res['y'] - textOffset),
         cv.FONT_HERSHEY_SIMPLEX,
-        4.0,
-        cv.Scalar(0, 0, 255),
-        thickness: 20,
+        fontScale,
+        color,
+        thickness: fontThickness,
       );
     }
   }
@@ -758,7 +980,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
                                 ),
                                 onPressed: _isProcessing
                                     ? null
-                                    : _pickImageFromGallery,
+                                    : _pickImageFromGalleryAndProcessing,
                               ),
 
                               // Tombol capture (ambil gambar)
