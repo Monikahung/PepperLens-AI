@@ -72,4 +72,32 @@ class DetectionRepository {
       detailsList,
     );
   }
+
+  // Ambil data hasil dan detail deteksi berdasarkan id hasil deteksi
+  Future<Map<String, dynamic>> getCompleteDetectionResult(int idResult) async {
+    final db = await _dbHelper.database;
+
+    // Ambil header
+    final headerResult = await db.query(
+      'Hasil_Deteksi',
+      where: 'id_hasil_deteksi = ?',
+      whereArgs: [idResult],
+    );
+
+    // Jika tidak ditemukan
+    if (headerResult.isEmpty) throw Exception("Data tidak ditemukan");
+
+    // Ambil data detail deteksi
+    final detailsResult = await db.rawQuery(
+      '''
+      SELECT d.*, p.nama_penyakit
+      FROM Detail_Deteksi d
+      JOIN Penyakit p ON d.id_penyakit = p.id_penyakit
+      WHERE d.id_hasil_deteksi = ?
+      ''',
+      [idResult],
+    );
+
+    return {'header': headerResult.first, 'details': detailsResult};
+  }
 }
