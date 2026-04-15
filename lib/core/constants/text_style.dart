@@ -92,6 +92,14 @@ class AppTextStyles {
     color: AppColors.honeydew,
   );
 
+  // Teks untuk keterangan tanggal, jam, dan waktu proses
+  static const TextStyle manropeTwelve = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    color: AppColors.honeydew,
+  );
+
   // -- POPPINS FONT FAMILY --
 
   // Teks untuk label navbar
@@ -119,7 +127,7 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion
+  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion, judul nama penyakit di hasil deteksi, teks di kotak hitam sebagai tanda jumlah cropping
   static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
