@@ -220,7 +220,6 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       matSize.release();
 
       // Simpan gambar mentah ke internal (kompresi 70%)
-      setState(() => _loadingMessage = "Mengamankan data asli");
       final directory = await getApplicationDocumentsDirectory();
       final String internalPath =
           '${directory.path}/mentah_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -234,19 +233,37 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       matRaw.release();
 
       // Tahap pre-processing gambar
-      setState(() => _loadingMessage = "Menyiapkan data AI");
       final inputData = await preProcessYOLO(sourcePath);
 
       // Tahap inference
-      setState(() => _loadingMessage = "Mendeteksi Penyakit");
       List<Map<String, dynamic>> results = await _runInference(
         inputData,
         originalW,
         originalH,
       );
 
+      // Jika tidak terdeteksi penyakit
+      if (results.isEmpty) {
+        setState(() {
+          _isProcessing = false;
+          _errorMessage = "Tidak terdeteksi penyakit";
+        });
+
+        // Hilangkan pesan error setelah 2 detik
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() => _errorMessage = null);
+          }
+        });
+
+        // Hapus gambar mentah
+        if (await File(sourcePath).exists()) await File(sourcePath).delete();
+
+        // Keluar dari fungsi
+        return;
+      }
+
       // Tahap penyimpanan hasil
-      setState(() => _loadingMessage = "Menyimpan ke galeri");
       cv.Mat matResult = cv.imread(sourcePath);
       _drawBoundingBoxes(matResult, results);
 
@@ -269,7 +286,6 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       double timeProcess = stopwatch.elapsedMilliseconds / 1000.0;
 
       // Tahap penyimpanan sqlite
-      setState(() => _loadingMessage = "Mencatat hasil deteksi");
       final repo = DetectionRepository();
 
       int idNewResult = await repo.insertResultDetectionToDatabase(
@@ -303,7 +319,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         _errorMessage = e.toString();
       });
 
-      // Hilangkan pesan error setelah 3 detik
+      // Hilangkan pesan error setelah 2 detik
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _errorMessage = null);
@@ -346,7 +362,6 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       matSize.release();
 
       // Simpan gambar mentah ke internal (kompresi 70%)
-      setState(() => _loadingMessage = "Mengamankan data asli");
       final directory = await getApplicationDocumentsDirectory();
       final String internalPath =
           '${directory.path}/mentah_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -360,19 +375,37 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       matRaw.release();
 
       // Tahap pre-processing gambar
-      setState(() => _loadingMessage = "Menyiapkan data AI");
       final inputData = await preProcessYOLO(cachePath);
 
       // Tahap inference
-      setState(() => _loadingMessage = "Mendeteksi Penyakit");
       List<Map<String, dynamic>> results = await _runInference(
         inputData,
         originalW,
         originalH,
       );
 
+      // Jika tidak terdeteksi penyakit
+      if (results.isEmpty) {
+        setState(() {
+          _isProcessing = false;
+          _errorMessage = "Tidak terdeteksi penyakit";
+        });
+
+        // Hilangkan pesan error setelah 2 detik
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() => _errorMessage = null);
+          }
+        });
+
+        // Hapus gambar mentah
+        if (await File(cachePath).exists()) await File(cachePath).delete();
+
+        // Keluar dari fungsi
+        return;
+      }
+
       // Tahap penyimpanan hasil
-      setState(() => _loadingMessage = "Menyimpan ke galeri");
       cv.Mat matResult = cv.imread(cachePath);
       _drawBoundingBoxes(matResult, results);
 
@@ -395,7 +428,6 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       double timeProcess = stopwatch.elapsedMilliseconds / 1000.0;
 
       // Tahap penyimpanan sqlite
-      setState(() => _loadingMessage = "Mencatat hasil deteksi");
       final repo = DetectionRepository();
 
       int idNewResult = await repo.insertResultDetectionToDatabase(
@@ -432,7 +464,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         _errorMessage = e.toString();
       });
 
-      // Hilangkan pesan error setelah 3 detik
+      // Hilangkan pesan error setelah 2 detik
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => _errorMessage = null);
@@ -493,6 +525,10 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       // Jika berhasil lolos ketiga validasi tersebut
       setState(() => _loadingMessage = "Lolos cek kualitas");
       await Future.delayed(const Duration(milliseconds: 500));
+
+      // Tampilkan pesan loading bahwa proses deteksi akan berjalan
+      setState(() => _loadingMessage = "Mendeteksi penyakit");
+      await Future.delayed(const Duration(milliseconds: 100));
     } catch (e) {
       rethrow;
     } finally {
