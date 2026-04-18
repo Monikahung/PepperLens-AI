@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:pepperlens_ai/core/constants/assets.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
@@ -9,6 +10,9 @@ import 'package:pepperlens_ai/features/home/presentation/pages/home_page.dart';
 void main() async {
   // Inisialisasi Flutter sebelum menjalankan operasi asynchronous
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi data format tanggal untuk bahasa Indonesia
+  await initializeDateFormatting('id_ID', null);
 
   try {
     // Pesan database sedang diinisialisasi
