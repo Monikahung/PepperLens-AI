@@ -8,6 +8,7 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_page.dart';
+import 'package:pepperlens_ai/features/history/presentation/pages/history_page.dart';
 import 'package:pepperlens_ai/features/detection/presentation/pages/scan_camera_page.dart';
 import 'package:pepperlens_ai/features/home/presentation/widgets/menu_card.dart';
 
@@ -24,7 +25,7 @@ class HomePage extends StatelessWidget {
       _buildHomeContent(context),
       const EncyclopediaPage(),
       const SizedBox.shrink(),
-      const Center(child: Text("Halaman Riwayat")),
+      const HistoryPage(),
       const Center(child: Text("Halaman Panduan")),
     ];
 
