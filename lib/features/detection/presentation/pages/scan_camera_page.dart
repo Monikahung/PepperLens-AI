@@ -12,7 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
-import 'package:pepperlens_ai/features/detection/data/detection_repository.dart';
+import 'package:pepperlens_ai/features/detection/data/repositories/detection_repository.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/camera_exposure_controller.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/focus_marker_painter.dart';
 import 'package:pepperlens_ai/features/detection/presentation/pages/detection_result_page.dart';

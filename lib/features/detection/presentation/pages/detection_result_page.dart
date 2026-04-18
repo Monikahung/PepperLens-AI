@@ -6,7 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/detection_disease_card.dart';
-import 'package:pepperlens_ai/features/detection/data/detection_repository.dart';
+import 'package:pepperlens_ai/features/detection/data/repositories/detection_repository.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_detail_page.dart';
 
 // Halaman utama untuk menampilkan hasil deteksi beserta cropping gambar untuk setiap penyakit yang terdeteksi
