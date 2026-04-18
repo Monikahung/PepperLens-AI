@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
@@ -12,7 +13,15 @@ class EncyclopediaDetailPage extends StatefulWidget {
   // Id penyakit sebagai kunci pencarian database
   final int diseaseId;
 
-  const EncyclopediaDetailPage({super.key, required this.diseaseId});
+  final String? detectionImagePath;
+  final List<Map<String, dynamic>>? detectionResults;
+
+  const EncyclopediaDetailPage({
+    super.key,
+    required this.diseaseId,
+    this.detectionImagePath,
+    this.detectionResults,
+  });
 
   @override
   State<EncyclopediaDetailPage> createState() => _EncyclopediaDetailPageState();
@@ -21,6 +30,32 @@ class EncyclopediaDetailPage extends StatefulWidget {
 class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
   // Inisialisasi repository untuk akses data penyakit
   final EncyclopediaRepository _repository = EncyclopediaRepository();
+
+  // Konversi nama penyakit menjadi label penyakit
+  String _getShortLabel(String? fullName) {
+    if (fullName == null) return "Unknown";
+
+    switch (fullName) {
+      case 'Kuning':
+        return 'Kuning';
+      case 'Busuk Pangkal Batang':
+        return 'BPB';
+      case 'Keriting/Kerdil':
+        return 'Keriting';
+      case 'Hawar Daun':
+        return 'Hawar';
+      default:
+        return fullName;
+    }
+  }
+
+  // Dapatkan ukuran gambar berdasarkan path gambar
+  Future<Size> _getImageSize(String imagePath) async {
+    final File file = File(imagePath);
+    final data = await file.readAsBytes();
+    final decodedImage = await decodeImageFromList(data);
+    return Size(decodedImage.width.toDouble(), decodedImage.height.toDouble());
+  }
 
   // Bangun tampilan halaman detail penyakit di ensiklopedia
   @override
@@ -118,39 +153,66 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tampilkan gambar utama berupa gambar tanaman lada atau gambar daun lada yang terserang penyakit
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.mysticJade, width: 2),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: AspectRatio(
-                        aspectRatio: 1 / 1,
-                        child: hasNoImage || mainImagePath.isEmpty
-                            ? Container(
-                                color: AppColors.frostedMint,
-                                child: const Icon(
-                                  Icons.broken_image,
-                                  color: AppColors.honeydew,
-                                  size: 40,
-                                ),
-                              )
-                            : Image.asset(
-                                mainImagePath,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, e, s) => Container(
-                                  color: AppColors.frostedMint,
-                                  child: const Icon(
-                                    Icons.broken_image,
-                                    color: AppColors.honeydew,
-                                  ),
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
+                  // Tampilkan gambar utama berupa gambar tanaman lada atau gambar daun lada yang terserang penyakit serta gambar hasil deteksi pada kondisi tertentu
+                  widget.detectionImagePath != null &&
+                          widget.detectionResults != null
+                      ?
+                        // Jika ada gambar hasil deteksi, tampilkan gambar hasil deteksi beserta kotak bounding box (menu deteksi)
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColors.mysticJade,
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: _buildDetectionHeader(
+                              widget.detectionImagePath!,
+                              widget.detectionResults!,
+                              widget.diseaseId,
+                            ),
+                          ),
+                        )
+                      :
+                        // Jika tidak ada gambar hasil deteksi, tampilkan gambar tanaman lada atau daun lada yang terserang penyakit (menu ensiklopedia)
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColors.mysticJade,
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: AspectRatio(
+                              aspectRatio: 1 / 1,
+                              child: hasNoImage || mainImagePath.isEmpty
+                                  ? Container(
+                                      color: AppColors.frostedMint,
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        color: AppColors.honeydew,
+                                        size: 40,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      mainImagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, e, s) =>
+                                          Container(
+                                            color: AppColors.frostedMint,
+                                            child: const Icon(
+                                              Icons.broken_image,
+                                              color: AppColors.honeydew,
+                                            ),
+                                          ),
+                                    ),
+                            ),
+                          ),
+                        ),
 
                   // Jarak antar komponen
                   const SizedBox(height: 20),
@@ -190,21 +252,23 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
                     children: _buildGejalaChildren(gambarList, data['gejala']),
                   ),
 
-                  // Tampilkan accordion penyebab beserta content di dalamnya
-                  InfoCard(
-                    title: "Penyebab",
-                    backgroundColor: AppColors.frostedMint,
-                    collapsedBackgroundColor: AppColors.frostedMint,
-                    children: [
-                      DetailInfoCard(
-                        title: "Kemungkinan Penyebab",
-                        content: BulletListContent(
-                          data: data['penyebab'],
-                          column: 'desc_penyebab',
+                  // Tampilkan accordion penyebab beserta content di dalamnya apabila tidak ditampilkan gambar hasil deteksi setiap penyakit (menu ensiklopedia)
+                  if (widget.detectionImagePath == null &&
+                      widget.detectionResults == null)
+                    InfoCard(
+                      title: "Penyebab",
+                      backgroundColor: AppColors.frostedMint,
+                      collapsedBackgroundColor: AppColors.frostedMint,
+                      children: [
+                        DetailInfoCard(
+                          title: "Kemungkinan Penyebab",
+                          content: BulletListContent(
+                            data: data['penyebab'],
+                            column: 'desc_penyebab',
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
                   // Tampilkan accordion pengendalian beserta content di dalamnya
                   InfoCard(
@@ -339,5 +403,93 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
     );
 
     return children;
+  }
+
+  // Widget khusus untuk menampilkan gambar hasil deteksi untuk setiap penyakit di halaman detail penyakit pada menu ensiklopedia
+  Widget _buildDetectionHeader(
+    String path,
+    List<Map<String, dynamic>> results,
+    int currentDiseaseId,
+  ) {
+    return FutureBuilder<Size>(
+      future: _getImageSize(path),
+      builder: (context, sizeSnapshot) {
+        if (!sizeSnapshot.hasData) return const SizedBox();
+
+        double originalWidth = sizeSnapshot.data!.width;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            double scale = constraints.maxWidth / originalWidth;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  children: [
+                    // Gambar mentah asli
+                    Image.file(
+                      File(path),
+                      width: constraints.maxWidth,
+                      fit: BoxFit.fitWidth,
+                    ),
+
+                    // Loop bounding box dan label
+                    ...results
+                        .where((res) => res['id_penyakit'] == currentDiseaseId)
+                        .expand((res) {
+                          // Konversi data koordinat dari database ke double
+                          double x = (res['x'] as num).toDouble() * scale;
+                          double y = (res['y'] as num).toDouble() * scale;
+                          double w = (res['width'] as num).toDouble() * scale;
+                          double h = (res['height'] as num).toDouble() * scale;
+
+                          // Ambil warna sesuai id penyakit
+                          Color diseaseColor = AppColors.getDiseaseColor(
+                            currentDiseaseId,
+                          );
+
+                          return [
+                            // Gambar kotak bounding box
+                            Positioned(
+                              left: x,
+                              top: y,
+                              child: Container(
+                                width: w,
+                                height: h,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: diseaseColor,
+                                    width: 4,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Label penyakit
+                            Positioned(
+                              left: x,
+                              top: y,
+                              child: FractionalTranslation(
+                                translation: Offset(0.0, -1.0),
+                                child: Text(
+                                  "${_getShortLabel(res['nama_penyakit'])} ${(res['confidence'] as num).round()}%",
+                                  style: AppTextStyles.poppinsFour.copyWith(
+                                    color: diseaseColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ];
+                        }),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }
