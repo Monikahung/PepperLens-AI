@@ -7,6 +7,7 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/detection_disease_card.dart';
 import 'package:pepperlens_ai/features/detection/data/detection_repository.dart';
+import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_detail_page.dart';
 
 // Halaman utama untuk menampilkan hasil deteksi beserta cropping gambar untuk setiap penyakit yang terdeteksi
 class DetectionResultPage extends StatefulWidget {
@@ -308,7 +309,19 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                         // Pemanggilan widget untuk menampilkan daftar penyakit yang terdeteksi beserta detailnya
                         return DetectionDiseaseCard(
                           title: entry.key,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EncyclopediaDetailPage(
+                                  diseaseId: entry.value.first['id_penyakit'],
+                                  detectionImagePath:
+                                      header['path_gambar_potret'],
+                                  detectionResults: details,
+                                ),
+                              ),
+                            );
+                          },
                           isLast: index == entries.length - 1,
                           children: [
                             Wrap(
