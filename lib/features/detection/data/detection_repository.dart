@@ -55,6 +55,7 @@ class DetectionRepository {
         'y': res['y'].toDouble(),
         'width': res['w'].toDouble(),
         'height': res['h'].toDouble(),
+        'confidence': res['score'],
       });
     }
 
