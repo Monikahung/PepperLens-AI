@@ -6,6 +6,7 @@ class DetailDeteksiModel {
   final double y;
   final double width;
   final double height;
+  final double confidence;
 
   // Constructor utama untuk membuat objek Detail Deteksi
   DetailDeteksiModel({
@@ -16,6 +17,7 @@ class DetailDeteksiModel {
     required this.y,
     required this.width,
     required this.height,
+    required this.confidence,
   });
 
   // Constructor khusus untuk mengubah data dari SQLite (Map) menjadi objek yang bisa diproses oleh Flutter
@@ -28,6 +30,7 @@ class DetailDeteksiModel {
       y: (map['y'] as num).toDouble(),
       width: (map['width'] as num).toDouble(),
       height: (map['height'] as num).toDouble(),
+      confidence: (map['confidence'] as num).toDouble(),
     );
   }
 
@@ -41,6 +44,7 @@ class DetailDeteksiModel {
       'y': y,
       'width': width,
       'height': height,
+      'confidence': confidence,
     };
   }
 }

@@ -121,6 +121,7 @@ class DatabaseHelper {
         y REAL NOT NULL,
         width REAL NOT NULL,
         height REAL NOT NULL,
+        confidence REAL NOT NULL,
         FOREIGN KEY (id_hasil_deteksi) REFERENCES Hasil_Deteksi (id_hasil_deteksi) ON DELETE CASCADE,
         FOREIGN KEY (id_penyakit) REFERENCES Penyakit (id_penyakit) ON DELETE CASCADE
       )
