@@ -11,4 +11,17 @@ class AppColors {
   static const Color black = Colors.black;
   static const Color white = Colors.white;
   static const Color transparent = Colors.transparent;
+
+  // Bounding box colors
+  static const Map<int, Color> diseaseMapColors = {
+    1: Color(0xFFFFFFFF),
+    2: Color(0xFFFF0000),
+    3: Color(0xFF00FFFF),
+    4: Color(0xFFFF00FF),
+  };
+
+  // Get color based on id
+  static Color getDiseaseColor(int? id) {
+    return diseaseMapColors[id] ?? const Color(0xFF00FF00);
+  }
 }
