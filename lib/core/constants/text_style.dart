@@ -127,7 +127,7 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion, judul nama penyakit di hasil deteksi, teks di kotak hitam sebagai tanda jumlah cropping
+  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion, judul nama penyakit di hasil deteksi, teks di kotak hitam sebagai tanda jumlah cropping, label dan skor hasil deteksi penyakit
   static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
