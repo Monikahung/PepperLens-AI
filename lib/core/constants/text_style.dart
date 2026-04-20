@@ -4,7 +4,8 @@ import 'colors.dart';
 class AppTextStyles {
   // -- MANROPE FONT FAMILY --
 
-  // Teks untuk sub judul menu, teks error
+  // Teks untuk sub judul menu
+  // Teks error
   static const TextStyle manropeOne = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -12,7 +13,8 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk deskripsi penyakit ensiklopedia, teks error
+  // Teks untuk deskripsi penyakit ensiklopedia
+  // Teks error
   static const TextStyle manropeTwo = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -37,6 +39,7 @@ class AppTextStyles {
   );
 
   // Teks untuk 'Halo, Sobat Lada'
+  // Teks untuk judul halaman
   static const TextStyle manropeFive = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 20,
@@ -53,6 +56,8 @@ class AppTextStyles {
   );
 
   // Teks untuk judul content di accordion
+  // Teks untuk dropdown list kategori
+  // Teks untuk tombol visualisasi
   static const TextStyle manropeSeven = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -61,6 +66,7 @@ class AppTextStyles {
   );
 
   // Teks untuk nama penyakit di halaman detail penyakit
+  // Teks untuk judul hapus riwayat
   static const TextStyle manropeEight = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 18,
@@ -69,6 +75,7 @@ class AppTextStyles {
   );
 
   // Teks untuk deskripsi penyakit di halaman detail penyakit
+  // Teks untuk deskripsi hapus riwayat
   static const TextStyle manropeNine = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -92,12 +99,40 @@ class AppTextStyles {
     color: AppColors.honeydew,
   );
 
-  // Teks untuk keterangan tanggal, jam, dan waktu proses
+  // Teks untuk keterangan tanggal
+  // Teks untuk keterangan jam
+  // Teks untuk keterangan waktu proses
+  // Teks untuk nama penyakit di riwayat
+  // Teks notifikasi riwayat berhasil dihapus
   static const TextStyle manropeTwelve = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
     fontWeight: FontWeight.w700,
     color: AppColors.honeydew,
+  );
+
+  // Teks untuk jumlah deteksi di riwayat
+  static const TextStyle manropeThirteen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    color: AppColors.darkCyan,
+  );
+
+  // Tombol batal pada dialog hapus riwayat
+  static const TextStyle manropeFourteen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.mysticJade,
+  );
+
+  // Tombol hapus pada dialog hapus riwayat
+  static const TextStyle manropeFifteen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: Colors.red,
   );
 
   // -- POPPINS FONT FAMILY --
@@ -127,7 +162,11 @@ class AppTextStyles {
     color: AppColors.darkCyan,
   );
 
-  // Teks untuk banner dan 'Menu Utama', judul informasi di dalam accordion, judul nama penyakit di hasil deteksi, teks di kotak hitam sebagai tanda jumlah cropping, label dan skor hasil deteksi penyakit
+  // Teks untuk banner dan 'Menu Utama'
+  // Teks untuk judul informasi di dalam accordion
+  // Teks untuk judul nama penyakit di hasil deteksi
+  // Teks di kotak hitam sebagai tanda jumlah cropping
+  // Teks untuk label dan skor hasil deteksi penyakit
   static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
