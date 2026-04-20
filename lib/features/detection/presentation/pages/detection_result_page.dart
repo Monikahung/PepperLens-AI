@@ -363,25 +363,28 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.honeydew, width: 1),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(
-          width: w,
-          height: h,
-          child: Stack(
-            children: [
-              // Geser gambar ke koordinat negatif untuk mensimulasikan efek crop gambar
-              Positioned(
-                left: -x,
-                top: -y,
-                child: Image.file(
-                  File(originalPath),
-                  fit: BoxFit.none,
-                  alignment: Alignment.topLeft,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(9),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: w,
+            height: h,
+            child: Stack(
+              children: [
+                // Geser gambar ke koordinat negatif untuk mensimulasikan efek crop gambar
+                Positioned(
+                  left: -x,
+                  top: -y,
+                  child: Image.file(
+                    File(originalPath),
+                    fit: BoxFit.none,
+                    alignment: Alignment.topLeft,
+                    filterQuality: FilterQuality.low,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
