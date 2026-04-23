@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pepperlens_ai/core/constants/assets.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
         systemNavigationBarColor: AppColors.honeydew,
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      child: MaterialApp(
+      child: GetMaterialApp(
         title: 'Pepperlens AI',
 
         // Matikan banner debug di pojok kanan atas
