@@ -1,4 +1,5 @@
 import 'package:pepperlens_ai/core/database/database_helper.dart';
+import 'package:sqflite/sqflite.dart';
 
 // Kelola konversi id penyakit serta penyimpanan hasil serta detail deteksi ke database lokal SQLite
 class DetectionRepository {
@@ -6,9 +7,7 @@ class DetectionRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   // Cari id penyakit berdasarkan label
-  Future<int> getDiseaseIdByLabel(String label) async {
-    final db = await _dbHelper.database;
-
+  Future<int> _getDiseaseIdByLabel(Transaction txn, String label) async {
     // Key adalah label YOLO dan value adalah nama penyakit di database
     final Map<String, String> diseaseDictionary = {
       'BPB': 'Busuk Pangkal Batang',
@@ -21,7 +20,7 @@ class DetectionRepository {
     String diseaseName = diseaseDictionary[label] ?? label;
 
     // Query ke database berdasarkan nama asli
-    List<Map<String, dynamic>> results = await db.query(
+    List<Map<String, dynamic>> results = await txn.query(
       'Penyakit',
       columns: ['id_penyakit'],
       where: 'nama_penyakit = ?',
@@ -42,36 +41,40 @@ class DetectionRepository {
     required double timeProcess,
     required List<Map<String, dynamic>> yoloResults,
   }) async {
-    // Siapkan List Detail secara Manual (karena butuh await)
-    final List<Map<String, dynamic>> detailsList = [];
+    // Buka database
+    final db = await _dbHelper.database;
 
-    for (var res in yoloResults) {
-      // Tunggu sampai id didapatkan dari database
-      int id = await getDiseaseIdByLabel(res['label']);
+    return await db.transaction((txn) async {
+      // Data untuk tabel Hasil Deteksi
+      final resultMap = {
+        'waktu_deteksi': DateTime.now().toIso8601String(),
+        'waktu_proses': timeProcess,
+        'path_gambar_potret': pathOriginal,
+        'path_gambar_deteksi': pathResult,
+      };
 
-      detailsList.add({
-        'id_penyakit': id,
-        'x': res['x'].toDouble(),
-        'y': res['y'].toDouble(),
-        'width': res['w'].toDouble(),
-        'height': res['h'].toDouble(),
-        'confidence': res['score'],
-      });
-    }
+      // Simpan dan dapatkan id hasil deteksi
+      final idResult = await txn.insert('Hasil_Deteksi', resultMap);
 
-    // Data untuk tabel Hasil Deteksi
-    final resultMap = {
-      'waktu_deteksi': DateTime.now().toIso8601String(),
-      'waktu_proses': timeProcess,
-      'path_gambar_potret': pathOriginal,
-      'path_gambar_deteksi': pathResult,
-    };
+      // Data untuk tabel Detail Deteksi
+      for (var res in yoloResults) {
+        // Cari id penyakit berdasarkan label
+        int id = await _getDiseaseIdByLabel(txn, res['label']);
 
-    // Eksekusi simpan lewat helper
-    return await _dbHelper.insertResultDetectionComplete(
-      resultMap,
-      detailsList,
-    );
+        await txn.insert('Detail_Deteksi', {
+          'id_hasil_deteksi': idResult,
+          'id_penyakit': id,
+          'x': res['x'].toDouble(),
+          'y': res['y'].toDouble(),
+          'width': res['w'].toDouble(),
+          'height': res['h'].toDouble(),
+          'confidence': res['score'],
+        });
+      }
+
+      // Kembalikan id hasil deteksi
+      return idResult;
+    });
   }
 
   // Ambil data hasil dan detail deteksi berdasarkan id hasil deteksi
