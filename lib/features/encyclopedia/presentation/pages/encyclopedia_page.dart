@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/widgets/encyclopedia_card.dart';
@@ -17,6 +18,15 @@ class EncyclopediaPage extends StatefulWidget {
 class _EncyclopediaPageState extends State<EncyclopediaPage> {
   // Instance repository untuk menangani logika pengambilan data penyakit
   final EncyclopediaRepository _repository = EncyclopediaRepository();
+
+  // Simpan future di dalam variabel agar tidak dipanggil berulang kali
+  late Future<List<Map<String, dynamic>>> _futureDiseases;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureDiseases = _repository.getDiseasesWithImages();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +51,7 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
 
       // Content dari halaman ensiklopedia
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _repository.getDiseasesWithImages(),
+        future: _futureDiseases,
         builder: (context, snapshot) {
           // Tampilkan indikator loading saat data sedang dimuat
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -76,7 +86,7 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
 
           // Tampilkan daftar penyakit
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
             itemCount: data.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
@@ -91,19 +101,9 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
                 // Jika diklik, dialihkan ke halaman ini
                 onTap: () {
                   // Masuk ke halaman encyclopedia detail page
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(microseconds: 100),
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          EncyclopediaDetailPage(
-                            diseaseId: item['id_penyakit'],
-                          ),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                            return child;
-                          },
-                    ),
+                  Get.to(
+                    () =>
+                        EncyclopediaDetailPage(diseaseId: item['id_penyakit']),
                   );
                 },
               );
