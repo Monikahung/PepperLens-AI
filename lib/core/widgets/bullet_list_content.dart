@@ -38,7 +38,9 @@ class BulletListContent extends StatelessWidget {
               // Teks informasi
               Expanded(
                 child: Text(
-                  data[index][column],
+                  data[index] is Map
+                      ? data[index][column].toString()
+                      : data[index].toString(),
                   style: AppTextStyles.manropeTen,
                 ),
               ),

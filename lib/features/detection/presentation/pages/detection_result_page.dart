@@ -238,7 +238,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                         onTap: () => Get.to(
                           () => EncyclopediaDetailPage(
                             diseaseId: entry.value.first['id_penyakit'],
-                            detectionImagePath: header['path_gambar_potret'],
+                            originalImagePath: header['path_gambar_potret'],
                             detectionResults: details,
                           ),
                         ),
