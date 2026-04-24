@@ -1,10 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
+import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
 import 'package:pepperlens_ai/features/history/data/repositories/history_repository.dart';
+import 'package:pepperlens_ai/features/history/presentation/widgets/history_header_actions.dart';
+import 'package:pepperlens_ai/features/history/presentation/widgets/history_delete_dialog.dart';
 
 // Halaman riwaya yang menampilkan daftar riwayat deteksi penyakit
 class HistoryPage extends StatefulWidget {
@@ -81,7 +83,18 @@ class _HistoryPageState extends State<HistoryPage> {
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               children: [
-                _buildHeaderActions(),
+                HistoryHeaderActions(
+                  selectedCategory: _selectedCategory,
+                  categories: _categories,
+                  onCategoryChanged: (newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    }
+                  },
+                  onVisualisasiTap: () {},
+                ),
                 const SizedBox(height: 50),
                 const Center(
                   child: Text(
@@ -110,7 +123,18 @@ class _HistoryPageState extends State<HistoryPage> {
             itemBuilder: (context, index) {
               // Jika index 0, tampilkan baris filter dan tombol visualisasi
               if (index == 0) {
-                return _buildHeaderActions();
+                return HistoryHeaderActions(
+                  selectedCategory: _selectedCategory,
+                  categories: _categories,
+                  onCategoryChanged: (newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    }
+                  },
+                  onVisualisasiTap: () {},
+                );
               }
 
               final item = data[index - 1];
@@ -125,19 +149,22 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 onDelete: () async {
                   // Tampilkan dialog konfirmasi sebelum menghapus riwayat
-                  bool? confirm = await _showDeleteConfirmationDialog(context);
+                  bool? confirm = await showDialog(
+                    context: context,
+                    builder: (context) => HistoryDeleteDialog(),
+                  );
 
                   // Jika mengklik tombol hapus
                   if (confirm == true) {
-                    final String pathDeteksi = item['path_deteksi'];
-                    final String pathPotret = item['path_potret'];
+                    final String pathDetection = item['path_deteksi'];
+                    final String pathOriginal = item['path_potret'];
 
                     // Hapus data hasil deteksi dari database
                     await _historyRepository.deleteHistory(item['id_hasil']);
 
                     // Hapus file gambar hasil deteksi dan gambar potret dari penyimpanan lokal
-                    await deleteFile(pathDeteksi);
-                    await deleteFile(pathPotret);
+                    await FileHelper.deleteLocalFile(pathDetection);
+                    await FileHelper.deleteLocalFile(pathOriginal);
 
                     if (!context.mounted) return;
 
@@ -145,173 +172,13 @@ class _HistoryPageState extends State<HistoryPage> {
                     setState(() {});
 
                     // Tampilkan snackbar sukses jika penghapusan berhasil
-                    _showSuccessSnackBar(context);
+                    HistoryDeleteDialog.showSuccessSnackBar(context);
                   }
                 },
               );
             },
           );
         },
-      ),
-    );
-  }
-
-  // Widget untuk menampilkan baris filter dan tombol visualisasi
-  Widget _buildHeaderActions() {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Filter dropdown untuk kategori berdasarkan rentang waktu
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.frostedMint,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedCategory,
-                  isExpanded: true,
-                  dropdownColor: AppColors.frostedMint,
-                  borderRadius: BorderRadius.circular(10),
-                  icon: Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: AppColors.honeydew,
-                    ),
-                  ),
-                  selectedItemBuilder: (BuildContext context) {
-                    return _categories.map<Widget>((String item) {
-                      return Row(
-                        children: [
-                          const SizedBox(width: 10),
-                          const Icon(Icons.tune, color: AppColors.honeydew),
-                          const SizedBox(width: 10),
-                          Text(item, style: AppTextStyles.manropeSeven),
-                        ],
-                      );
-                    }).toList();
-                  },
-                  items: _categories.map((val) {
-                    return DropdownMenuItem(
-                      value: val,
-                      child: Text(val, style: AppTextStyles.manropeSeven),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 10),
-
-          // Tombol navigasi ke halaman visualisasi
-          Expanded(
-            child: InkWell(
-              onTap: () {},
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.frostedMint,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Icon(Icons.bar_chart, color: AppColors.honeydew),
-                    const SizedBox(width: 5),
-                    Text('Visualisasi', style: AppTextStyles.manropeSeven),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      color: AppColors.honeydew,
-                      size: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Dialog konfirmasi sebelum menghapus riwayat
-  Future<bool?> _showDeleteConfirmationDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.honeydew,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        title: Text("Hapus Riwayat", style: AppTextStyles.manropeEight),
-        content: Text(
-          "Apakah Anda yakin ingin menghapus riwayat deteksi ini?",
-          style: AppTextStyles.manropeNine,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text("Batal", style: AppTextStyles.manropeFourteen),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text("Hapus", style: AppTextStyles.manropeFifteen),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Penghapusan file gambar dari penyimpanan lokal
-  Future<void> deleteFile(String path) async {
-    if (path.isNotEmpty) {
-      final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
-        debugPrint("Berhasil hapus: $path");
-      }
-    }
-  }
-
-  // Snackbar sukses jika penghapusan riwayat berhasil
-  void _showSuccessSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.frostedMint,
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              color: AppColors.honeydew,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              "Riwayat berhasil dihapus",
-              style: AppTextStyles.manropeTwelve,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height - 150,
-          left: 20,
-          right: 20,
-        ),
-        duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
