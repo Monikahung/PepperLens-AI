@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 
+// Widget untuk menampilkan dialog konfirmasi saat menghapus riwayat deteksi serta menampilkan snackbar sukses jika penghapusan berhasil
 class HistoryDeleteDialog extends StatelessWidget {
   const HistoryDeleteDialog({super.key});
 
+  // Menampilkan dialog konfirmasi saat menghapus riwayat deteksi
   @override
   Widget build(BuildContext context) {
     return AlertDialog(

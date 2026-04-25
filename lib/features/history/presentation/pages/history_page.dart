@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
+import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
 import 'package:pepperlens_ai/features/history/data/repositories/history_repository.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_header_actions.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_delete_dialog.dart';
 
-// Halaman riwaya yang menampilkan daftar riwayat deteksi penyakit
+// Halaman riwayat yang menampilkan daftar riwayat deteksi penyakit
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
 
@@ -31,6 +33,7 @@ class _HistoryPageState extends State<HistoryPage> {
     'Semua',
   ];
 
+  // Bangun tampilan halaman riwayat deteksi penyakit
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,8 +60,9 @@ class _HistoryPageState extends State<HistoryPage> {
         future: _historyRepository.getHistoryDetection(
           filter: _selectedCategory,
         ),
-        // Tampilkan indikator loading saat data sedang dimuat
+
         builder: (context, snapshot) {
+          // Tampilkan indikator loading saat data sedang dimuat
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(color: AppColors.mysticJade),
@@ -80,34 +84,53 @@ class _HistoryPageState extends State<HistoryPage> {
 
           // Tampilkan pesan jika tidak ada data hasil dan riwayat deteksi ditemukan di database
           if (data.isEmpty) {
-            return ListView(
+            return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              children: [
-                HistoryHeaderActions(
-                  selectedCategory: _selectedCategory,
-                  categories: _categories,
-                  onCategoryChanged: (newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
-                  },
-                  onVisualisasiTap: () {},
-                ),
-                const SizedBox(height: 50),
-                const Center(
-                  child: Text(
-                    "Belum ada data riwayat.",
-                    style: AppTextStyles.manropeOne,
+              child: Column(
+                children: [
+                  HistoryHeaderActions(
+                    selectedCategory: _selectedCategory,
+                    categories: _categories,
+                    onCategoryChanged: (newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      }
+                    },
+                    onVisualisasiTap: () {
+                      Get.to(
+                        () => VisualizationPage(filter: _selectedCategory),
+                      );
+                    },
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 50,
+                          color: AppColors.darkCyan.withAlpha(
+                            (0.25 * 255).toInt(),
+                          ),
+                        ),
+                        Text(
+                          "Belum ada data riwayat\nuntuk periode ini",
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.manropeOne,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
           // Tampilkan daftar riwayat deteksi
           return ListView.separated(
+            // Padding untuk menampilkan content di bawah appBar
             padding: const EdgeInsets.only(
               left: 20,
               right: 20,
@@ -133,7 +156,9 @@ class _HistoryPageState extends State<HistoryPage> {
                       });
                     }
                   },
-                  onVisualisasiTap: () {},
+                  onVisualisasiTap: () {
+                    Get.to(() => VisualizationPage(filter: _selectedCategory));
+                  },
                 );
               }
 

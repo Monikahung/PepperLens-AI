@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 
+// Widget untuk menampilkan filter dropdown dan tombol visualisasi
 class HistoryHeaderActions extends StatelessWidget {
+  // Atribut yang diperlukan untuk filter dropdown dan tombol visualisasi
   final String selectedCategory;
   final List<String> categories;
   final ValueChanged<String?> onCategoryChanged;
   final VoidCallback onVisualisasiTap;
 
+  // Instance dari HistoryHeaderActions dengan parameter wajib diisi
   const HistoryHeaderActions({
     super.key,
     required this.selectedCategory,
@@ -16,6 +19,7 @@ class HistoryHeaderActions extends StatelessWidget {
     required this.onVisualisasiTap,
   });
 
+  // Bangun tampilan filter dropdown dan tombol visualisasi
   @override
   Widget build(BuildContext context) {
     return IntrinsicHeight(
@@ -66,12 +70,13 @@ class HistoryHeaderActions extends StatelessWidget {
             ),
           ),
 
+          // Jarak antar filter dropdown dan tombol visualisasi
           const SizedBox(width: 10),
 
           // Tombol navigasi ke halaman visualisasi
           Expanded(
             child: InkWell(
-              onTap: () {},
+              onTap: onVisualisasiTap,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
