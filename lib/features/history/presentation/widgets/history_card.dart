@@ -176,7 +176,7 @@ class HistoryCard extends StatelessWidget {
             ),
             child: Text(count, style: AppTextStyles.manropeThirteen),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               label,
