@@ -77,7 +77,7 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
           if (data.isEmpty) {
             return Center(
               child: Text(
-                "Belum ada data penyakit.",
+                "Belum ada data penyakit",
                 style: AppTextStyles.manropeOne,
                 textAlign: TextAlign.center,
               ),

@@ -80,7 +80,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
             backgroundColor: AppColors.honeydew,
             body: Center(
               child: Text(
-                "Data tidak ditemukan.",
+                "Data tidak ditemukan",
                 style: AppTextStyles.manropeOne,
                 textAlign: TextAlign.center,
               ),

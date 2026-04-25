@@ -73,7 +73,7 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
             backgroundColor: AppColors.honeydew,
             body: Center(
               child: Text(
-                "Data tidak ditemukan.",
+                "Data tidak ditemukan",
                 style: AppTextStyles.manropeOne,
                 textAlign: TextAlign.center,
               ),
@@ -108,6 +108,7 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
           ),
           child: Scaffold(
             backgroundColor: AppColors.honeydew,
+            
             appBar: AppBar(
               backgroundColor: AppColors.honeydew,
               surfaceTintColor: AppColors.transparent,
@@ -136,8 +137,9 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
                 systemNavigationBarIconBrightness: Brightness.light,
               ),
             ),
-            // Padding untuk menampilkan content di bawah appBar
+
             body: SingleChildScrollView(
+              // Padding untuk menampilkan content di bawah appBar
               padding: const EdgeInsets.only(
                 left: 20,
                 right: 20,
