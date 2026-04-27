@@ -37,9 +37,9 @@ class VisualizationMapper {
       case 'Hari ini':
         return "Hasil Deteksi Hari Ini";
       case 'Bulan ini':
-        return "Hasil Deteksi Sebulan Terakhir";
+        return "Hasil Deteksi Bulan Ini";
       case 'Tahun ini':
-        return "Hasil Deteksi Setahun Terakhir";
+        return "Hasil Deteksi Tahun Ini";
       case 'Semua':
         return "Hasil Deteksi Sepanjang Waktu";
       default:
