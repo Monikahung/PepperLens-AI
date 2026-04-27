@@ -121,14 +121,23 @@ class _GuidePageState extends State<GuidePage> {
                     // Tampilkan gambar ilustrasi beserta list panduan
                     children: [
                       // Gambar ilustrasi
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: AspectRatio(
-                          aspectRatio: 3 / 2,
-                          child: Image.asset(
-                            item['imagePath'],
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.honeydew,
+                            width: 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: AspectRatio(
+                            aspectRatio: 3 / 2,
+                            child: Image.asset(
+                              item['imagePath'],
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
