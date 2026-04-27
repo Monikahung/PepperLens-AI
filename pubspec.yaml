@@ -45,6 +45,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/disease_images/
+    - assets/images/guide_images/
     - assets/model/best_float32.tflite
 
   # Define costum fonts for the application

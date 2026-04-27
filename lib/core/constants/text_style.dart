@@ -173,4 +173,12 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.honeydew,
   );
+
+  // Teks untuk nomor panduan
+  static const TextStyle poppinsFive = TextStyle(
+    fontFamily: 'Poppins',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.darkCyan,
+  );
 }

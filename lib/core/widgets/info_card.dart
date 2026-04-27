@@ -4,8 +4,9 @@ import 'package:pepperlens_ai/core/constants/text_style.dart';
 
 // Widget untuk menampilkan informasi dalam bentuk accordion
 class InfoCard extends StatelessWidget {
-  // Atribut judul utama, daftar widget yang ada di dalamnya, kontrol visible kartu, warna background saat terbuka dan tertutup, serta menentukan apakah kartu termasuk urutan terakhir
+  // Atribut judul utama, judul widget, daftar widget yang ada di dalamnya, kontrol visible kartu, warna background saat terbuka dan tertutup, serta menentukan apakah kartu termasuk urutan terakhir
   final String title;
+  final Widget? titleWidget;
   final List<Widget> children;
   final bool isVisible;
   final Color backgroundColor;
@@ -16,6 +17,7 @@ class InfoCard extends StatelessWidget {
   const InfoCard({
     super.key,
     required this.title,
+    this.titleWidget,
     required this.children,
     this.isVisible = true,
     required this.backgroundColor,
@@ -53,7 +55,7 @@ class InfoCard extends StatelessWidget {
           collapsedIconColor: AppColors.honeydew,
 
           // Judul accordion
-          title: Text(title, style: AppTextStyles.poppinsFour),
+          title: titleWidget ?? Text(title, style: AppTextStyles.poppinsFour),
 
           // Padding untuk konten di dalam kartu setelah dibuka
           childrenPadding: const EdgeInsets.only(
