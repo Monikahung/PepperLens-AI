@@ -50,66 +50,71 @@ class _EncyclopediaPageState extends State<EncyclopediaPage> {
       ),
 
       // Content dari halaman ensiklopedia
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _futureDiseases,
-        builder: (context, snapshot) {
-          // Tampilkan indikator loading saat data sedang dimuat
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(color: AppColors.mysticJade),
-            );
-          }
-
-          // Tampilkan pesan kesalahan jika terjadi error pada query
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                "Terjadi kesalahan: ${snapshot.error}",
-                style: AppTextStyles.manropeOne,
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-
-          final data = snapshot.data ?? [];
-
-          // Tampilkan pesan jika tidak ada data penyakit ditemukan di database
-          if (data.isEmpty) {
-            return Center(
-              child: Text(
-                "Belum ada data penyakit",
-                style: AppTextStyles.manropeOne,
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-
-          // Tampilkan daftar penyakit
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
-            itemCount: data.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = data[index];
-              return EncyclopediaCard(
-                // Ambil nama penyakit
-                name: item['nama_penyakit'],
-                // Ambil preview penyakit
-                previewText: item['preview_penyakit'],
-                // Ambil path gambar penyakit
-                imagePath: item['path_gambar'] ?? '',
-                // Jika diklik, dialihkan ke halaman ini
-                onTap: () {
-                  // Masuk ke halaman encyclopedia detail page
-                  Get.to(
-                    () =>
-                        EncyclopediaDetailPage(diseaseId: item['id_penyakit']),
-                  );
-                },
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: _futureDiseases,
+          builder: (context, snapshot) {
+            // Tampilkan indikator loading saat data sedang dimuat
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(color: AppColors.mysticJade),
               );
-            },
-          );
-        },
+            }
+
+            // Tampilkan pesan kesalahan jika terjadi error pada query
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  "Terjadi kesalahan: ${snapshot.error}",
+                  style: AppTextStyles.manropeOne,
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+
+            final data = snapshot.data ?? [];
+
+            // Tampilkan pesan jika tidak ada data penyakit ditemukan di database
+            if (data.isEmpty) {
+              return Center(
+                child: Text(
+                  "Belum ada data penyakit",
+                  style: AppTextStyles.manropeOne,
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+
+            // Tampilkan daftar penyakit
+            return ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+              itemCount: data.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = data[index];
+                return EncyclopediaCard(
+                  // Ambil nama penyakit
+                  name: item['nama_penyakit'],
+                  // Ambil preview penyakit
+                  previewText: item['preview_penyakit'],
+                  // Ambil path gambar penyakit
+                  imagePath: item['path_gambar'] ?? '',
+                  // Jika diklik, dialihkan ke halaman ini
+                  onTap: () {
+                    // Masuk ke halaman encyclopedia detail page
+                    Get.to(
+                      () => EncyclopediaDetailPage(
+                        diseaseId: item['id_penyakit'],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

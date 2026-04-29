@@ -127,134 +127,139 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
               systemNavigationBarIconBrightness: Brightness.light,
             ),
           ),
-          // Padding untuk menampilkan content di bawah appBar
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 10,
-              bottom: 30,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Tampilkan gambar utama berupa gambar yang ada bounding box hasil deteksi penyakit
-                ResultImageHeader(
-                  path: header['path_gambar_deteksi'] ?? '',
-                  noImage:
-                      (header['path_gambar_deteksi'] ?? '').isEmpty ||
-                      !File(header['path_gambar_deteksi']).existsSync(),
-                  date: _formatDateTime(header['waktu_deteksi']),
-                  processTime: header['waktu_proses'].toString(),
-                ),
+          body: SafeArea(
+            bottom: true,
+            top: false,
+            child: SingleChildScrollView(
+              // Padding untuk menampilkan content di bawah appBar
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 10,
+                bottom: 30,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tampilkan gambar utama berupa gambar yang ada bounding box hasil deteksi penyakit
+                  ResultImageHeader(
+                    path: header['path_gambar_deteksi'] ?? '',
+                    noImage:
+                        (header['path_gambar_deteksi'] ?? '').isEmpty ||
+                        !File(header['path_gambar_deteksi']).existsSync(),
+                    date: _formatDateTime(header['waktu_deteksi']),
+                    processTime: header['waktu_proses'].toString(),
+                  ),
 
-                // Jarak antar komponen
-                const SizedBox(height: 20),
+                  // Jarak antar komponen
+                  const SizedBox(height: 20),
 
-                // Tampilkan teks 'Penyakit Terdeteksi' dan garis pemisah
-                Row(
-                  children: [
-                    const Text(
-                      "Penyakit Terdeteksi",
-                      style: AppTextStyles.manropeEight,
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Divider(color: AppColors.darkCyan, thickness: 2),
-                    ),
-                  ],
-                ),
+                  // Tampilkan teks 'Penyakit Terdeteksi' dan garis pemisah
+                  Row(
+                    children: [
+                      const Text(
+                        "Penyakit Terdeteksi",
+                        style: AppTextStyles.manropeEight,
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Divider(color: AppColors.darkCyan, thickness: 2),
+                      ),
+                    ],
+                  ),
 
-                // Jarak antar komponen
-                const SizedBox(height: 14),
+                  // Jarak antar komponen
+                  const SizedBox(height: 14),
 
-                // Tampilkan daftar penyakit yang terdeteksi beserta detailnya
-                ...entries.asMap().entries.map((mapEntry) {
-                  int index = mapEntry.key;
-                  var entry = mapEntry.value;
-                  final List<Map<String, dynamic>> items = entry.value;
+                  // Tampilkan daftar penyakit yang terdeteksi beserta detailnya
+                  ...entries.asMap().entries.map((mapEntry) {
+                    int index = mapEntry.key;
+                    var entry = mapEntry.value;
+                    final List<Map<String, dynamic>> items = entry.value;
 
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Konfigurasi jumlah gambar crop berdasarkan lebar layar
-                      int crossAxisCount = constraints.maxWidth < 360 ? 3 : 4;
-                      const double gap = 16.0;
-                      const double paddingCard = 32.0;
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Konfigurasi jumlah gambar crop berdasarkan lebar layar
+                        int crossAxisCount = constraints.maxWidth < 360 ? 3 : 4;
+                        const double gap = 16.0;
+                        const double paddingCard = 32.0;
 
-                      // Hitung ukuran kotak crop secara dinamis
-                      double availableWidth =
-                          constraints.maxWidth - paddingCard;
-                      double dynamicBoxSize =
-                          (availableWidth - (gap * (crossAxisCount - 1))) /
-                          crossAxisCount;
+                        // Hitung ukuran kotak crop secara dinamis
+                        double availableWidth =
+                            constraints.maxWidth - paddingCard;
+                        double dynamicBoxSize =
+                            (availableWidth - (gap * (crossAxisCount - 1))) /
+                            crossAxisCount;
 
-                      // Batasi jumlah gambar crop yang ditampilkan
-                      int maxVisible = crossAxisCount;
-                      bool hasMore = items.length > maxVisible;
-                      int displayCount = hasMore
-                          ? maxVisible - 1
-                          : items.length;
+                        // Batasi jumlah gambar crop yang ditampilkan
+                        int maxVisible = crossAxisCount;
+                        bool hasMore = items.length > maxVisible;
+                        int displayCount = hasMore
+                            ? maxVisible - 1
+                            : items.length;
 
-                      // Tampilkan gambar header hasil deteksi
-                      List<Widget> cardContent = items.take(displayCount).map<Widget>((
-                        detection,
-                      ) {
-                        return CropPreview(
-                          originalPath: header['path_gambar_potret'],
-                          detection: detection,
-                          size: dynamicBoxSize,
-                        );
-                      }).toList();
+                        // Tampilkan gambar header hasil deteksi
+                        List<Widget> cardContent = items
+                            .take(displayCount)
+                            .map<Widget>((detection) {
+                              return CropPreview(
+                                originalPath: header['path_gambar_potret'],
+                                detection: detection,
+                                size: dynamicBoxSize,
+                              );
+                            })
+                            .toList();
 
-                      // Jika ada kelebihan gambar crop, tampilkan indikator "+X"
-                      if (hasMore) {
-                        cardContent.add(
-                          Container(
-                            width: dynamicBoxSize,
-                            height: dynamicBoxSize,
-                            decoration: BoxDecoration(
-                              color: AppColors.darkCyan.withAlpha(
-                                (0.75 * 255).toInt(),
+                        // Jika ada kelebihan gambar crop, tampilkan indikator "+X"
+                        if (hasMore) {
+                          cardContent.add(
+                            Container(
+                              width: dynamicBoxSize,
+                              height: dynamicBoxSize,
+                              decoration: BoxDecoration(
+                                color: AppColors.darkCyan.withAlpha(
+                                  (0.75 * 255).toInt(),
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: AppColors.honeydew,
+                                  width: 1,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: AppColors.honeydew,
-                                width: 1,
+                              child: Center(
+                                child: Text(
+                                  "+${items.length - displayCount}",
+                                  style: AppTextStyles.poppinsFour,
+                                ),
                               ),
                             ),
-                            child: Center(
-                              child: Text(
-                                "+${items.length - displayCount}",
-                                style: AppTextStyles.poppinsFour,
-                              ),
+                          );
+                        }
+
+                        // Pemanggilan widget untuk menampilkan daftar penyakit yang terdeteksi beserta detailnya
+                        return DetectionDiseaseCard(
+                          title: entry.key,
+                          onTap: () => Get.to(
+                            () => EncyclopediaDetailPage(
+                              diseaseId: entry.value.first['id_penyakit'],
+                              originalImagePath: header['path_gambar_potret'],
+                              detectionResults: details,
                             ),
                           ),
+                          isLast: index == entries.length - 1,
+                          children: [
+                            Wrap(
+                              spacing: gap,
+                              runSpacing: gap,
+                              children: cardContent,
+                            ),
+                          ],
                         );
-                      }
-
-                      // Pemanggilan widget untuk menampilkan daftar penyakit yang terdeteksi beserta detailnya
-                      return DetectionDiseaseCard(
-                        title: entry.key,
-                        onTap: () => Get.to(
-                          () => EncyclopediaDetailPage(
-                            diseaseId: entry.value.first['id_penyakit'],
-                            originalImagePath: header['path_gambar_potret'],
-                            detectionResults: details,
-                          ),
-                        ),
-                        isLast: index == entries.length - 1,
-                        children: [
-                          Wrap(
-                            spacing: gap,
-                            runSpacing: gap,
-                            children: cardContent,
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }),
-              ],
+                      },
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         );

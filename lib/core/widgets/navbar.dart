@@ -19,20 +19,28 @@ class CustomNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(color: AppColors.mysticJade),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        // Expanded untuk menampilkan setiap item navbar secara merata
-        children: [
-          Expanded(child: _navItem(Icons.home_outlined, "Beranda", 0)),
-          Expanded(
-            child: _navItem(Icons.menu_book_outlined, "Ensiklopedia", 1),
+      child: SafeArea(
+        top: false,
+        bottom: true,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            // Expanded untuk menampilkan setiap item navbar secara merata
+            children: [
+              Expanded(child: _navItem(Icons.home_outlined, "Beranda", 0)),
+              Expanded(
+                child: _navItem(Icons.menu_book_outlined, "Ensiklopedia", 1),
+              ),
+              Expanded(
+                child: _navItem(Icons.camera_alt_outlined, "Deteksi", 2),
+              ),
+              Expanded(child: _navItem(Icons.history, "Riwayat", 3)),
+              Expanded(child: _navItem(Icons.bookmark_outline, "Panduan", 4)),
+            ],
           ),
-          Expanded(child: _navItem(Icons.camera_alt_outlined, "Deteksi", 2)),
-          Expanded(child: _navItem(Icons.history, "Riwayat", 3)),
-          Expanded(child: _navItem(Icons.bookmark_outline, "Panduan", 4)),
-        ],
+        ),
       ),
     );
   }

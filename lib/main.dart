@@ -103,6 +103,8 @@ class _LogoPageState extends State<LogoPage> {
     return Scaffold(
       backgroundColor: AppColors.honeydew,
       body: SafeArea(
+        top: true,
+        bottom: true,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

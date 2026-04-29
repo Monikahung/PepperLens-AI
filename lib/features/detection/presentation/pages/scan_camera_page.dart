@@ -555,6 +555,8 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
               ),
 
               SafeArea(
+                bottom: true,
+                top: true,
                 child: Column(
                   children: [
                     // Tombol close

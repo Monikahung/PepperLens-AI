@@ -120,6 +120,8 @@ class HomePage extends StatelessWidget {
     // SafeArea untuk memastikan konten tidak tertutup oleh status bar atau notch
     return SafeArea(
       // Antisipasi supaya jika content melebihi tinggi layar, bisa di-scroll
+      top: true,
+      bottom: false,
       child: SingleChildScrollView(
         child: Padding(
           // Jarak sisi kiri dan kanan untuk konten utama

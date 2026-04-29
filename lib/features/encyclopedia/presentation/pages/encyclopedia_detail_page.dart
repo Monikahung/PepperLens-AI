@@ -108,7 +108,7 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
           ),
           child: Scaffold(
             backgroundColor: AppColors.honeydew,
-            
+
             appBar: AppBar(
               backgroundColor: AppColors.honeydew,
               surfaceTintColor: AppColors.transparent,
@@ -138,167 +138,171 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
               ),
             ),
 
-            body: SingleChildScrollView(
-              // Padding untuk menampilkan content di bawah appBar
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 10,
-                bottom: 30,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tampilkan gambar utama berupa gambar tanaman lada atau gambar daun lada yang terserang penyakit serta gambar hasil deteksi pada kondisi tertentu
-                  widget.originalImagePath != null &&
-                          widget.detectionResults != null
-                      ?
-                        // Jika ada gambar hasil deteksi, tampilkan gambar hasil deteksi beserta kotak bounding box (menu deteksi)
-                        DiseaseDetailHeader(
-                          originalImagePath: widget.originalImagePath,
-                          detectionResults: widget.detectionResults,
-                          diseaseId: widget.diseaseId,
-                          mainImagePath: mainImagePath,
-                          hasNoImage: hasNoImage,
-                          getShortLabel: _getShortLabel,
-                        )
-                      :
-                        // Jika tidak ada gambar hasil deteksi, tampilkan gambar tanaman lada atau daun lada yang terserang penyakit (menu ensiklopedia)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.mysticJade,
-                              width: 2,
+            body: SafeArea(
+              bottom: true,
+              top: false,
+              child: SingleChildScrollView(
+                // Padding untuk menampilkan content di bawah appBar
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 10,
+                  bottom: 30,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tampilkan gambar utama berupa gambar tanaman lada atau gambar daun lada yang terserang penyakit serta gambar hasil deteksi pada kondisi tertentu
+                    widget.originalImagePath != null &&
+                            widget.detectionResults != null
+                        ?
+                          // Jika ada gambar hasil deteksi, tampilkan gambar hasil deteksi beserta kotak bounding box (menu deteksi)
+                          DiseaseDetailHeader(
+                            originalImagePath: widget.originalImagePath,
+                            detectionResults: widget.detectionResults,
+                            diseaseId: widget.diseaseId,
+                            mainImagePath: mainImagePath,
+                            hasNoImage: hasNoImage,
+                            getShortLabel: _getShortLabel,
+                          )
+                        :
+                          // Jika tidak ada gambar hasil deteksi, tampilkan gambar tanaman lada atau daun lada yang terserang penyakit (menu ensiklopedia)
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.mysticJade,
+                                width: 2,
+                              ),
                             ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: AspectRatio(
-                              aspectRatio: 1 / 1,
-                              child: hasNoImage || mainImagePath.isEmpty
-                                  ? Container(
-                                      color: AppColors.frostedMint,
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                        color: AppColors.honeydew,
-                                        size: 40,
-                                      ),
-                                    )
-                                  : Image.asset(
-                                      mainImagePath,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, e, s) =>
-                                          Container(
-                                            color: AppColors.frostedMint,
-                                            child: const Icon(
-                                              Icons.broken_image,
-                                              color: AppColors.honeydew,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: AspectRatio(
+                                aspectRatio: 1 / 1,
+                                child: hasNoImage || mainImagePath.isEmpty
+                                    ? Container(
+                                        color: AppColors.frostedMint,
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          color: AppColors.honeydew,
+                                          size: 40,
+                                        ),
+                                      )
+                                    : Image.asset(
+                                        mainImagePath,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, e, s) =>
+                                            Container(
+                                              color: AppColors.frostedMint,
+                                              child: const Icon(
+                                                Icons.broken_image,
+                                                color: AppColors.honeydew,
+                                              ),
                                             ),
-                                          ),
-                                    ),
+                                      ),
+                              ),
                             ),
                           ),
-                        ),
 
-                  // Jarak antar komponen
-                  const SizedBox(height: 20),
+                    // Jarak antar komponen
+                    const SizedBox(height: 20),
 
-                  // Tampilkan nama penyakit
-                  Text(
-                    info['nama_penyakit'],
-                    style: AppTextStyles.manropeEight,
-                  ),
+                    // Tampilkan nama penyakit
+                    Text(
+                      info['nama_penyakit'],
+                      style: AppTextStyles.manropeEight,
+                    ),
 
-                  // Jarak antar komponen
-                  const SizedBox(height: 4),
+                    // Jarak antar komponen
+                    const SizedBox(height: 4),
 
-                  // Tampilkan nama penyakit menggunakan bahasa inggris
-                  Text(
-                    info['nama_inggris'] ?? "",
-                    style: AppTextStyles.poppinsTwo,
-                  ),
+                    // Tampilkan nama penyakit menggunakan bahasa inggris
+                    Text(
+                      info['nama_inggris'] ?? "",
+                      style: AppTextStyles.poppinsTwo,
+                    ),
 
-                  // Jarak antar komponen
-                  const SizedBox(height: 10),
+                    // Jarak antar komponen
+                    const SizedBox(height: 10),
 
-                  // Tampilkan deskripsi penyakit
-                  Text(
-                    info['desc_penyakit'] ?? "",
-                    style: AppTextStyles.manropeNine,
-                  ),
+                    // Tampilkan deskripsi penyakit
+                    Text(
+                      info['desc_penyakit'] ?? "",
+                      style: AppTextStyles.manropeNine,
+                    ),
 
-                  // Jarak antar komponen
-                  const SizedBox(height: 25),
+                    // Jarak antar komponen
+                    const SizedBox(height: 25),
 
-                  // Tampilkan accordion gejala beserta content di dalamnya
-                  InfoCard(
-                    title: "Gejala",
-                    backgroundColor: AppColors.frostedMint,
-                    collapsedBackgroundColor: AppColors.frostedMint,
-                    children: [
-                      SymptomContentList(
-                        imageList: gambarList,
-                        symptomText: data['gejala'],
-                      ),
-                    ],
-                  ),
-
-                  // Tampilkan accordion penyebab beserta content di dalamnya apabila tidak ditampilkan gambar hasil deteksi setiap penyakit (menu ensiklopedia)
-                  if (widget.originalImagePath == null &&
-                      widget.detectionResults == null)
+                    // Tampilkan accordion gejala beserta content di dalamnya
                     InfoCard(
-                      title: "Penyebab",
+                      title: "Gejala",
+                      backgroundColor: AppColors.frostedMint,
+                      collapsedBackgroundColor: AppColors.frostedMint,
+                      children: [
+                        SymptomContentList(
+                          imageList: gambarList,
+                          symptomText: data['gejala'],
+                        ),
+                      ],
+                    ),
+
+                    // Tampilkan accordion penyebab beserta content di dalamnya apabila tidak ditampilkan gambar hasil deteksi setiap penyakit (menu ensiklopedia)
+                    if (widget.originalImagePath == null &&
+                        widget.detectionResults == null)
+                      InfoCard(
+                        title: "Penyebab",
+                        backgroundColor: AppColors.frostedMint,
+                        collapsedBackgroundColor: AppColors.frostedMint,
+                        children: [
+                          DetailInfoCard(
+                            title: "Kemungkinan Penyebab",
+                            content: BulletListContent(
+                              data: data['penyebab'],
+                              column: 'desc_penyebab',
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // Tampilkan accordion pengendalian beserta content di dalamnya
+                    InfoCard(
+                      title: "Pengendalian",
+                      isLast: !showIdentification,
                       backgroundColor: AppColors.frostedMint,
                       collapsedBackgroundColor: AppColors.frostedMint,
                       children: [
                         DetailInfoCard(
-                          title: "Kemungkinan Penyebab",
+                          title: "Pengendalian Terpadu",
                           content: BulletListContent(
-                            data: data['penyebab'],
-                            column: 'desc_penyebab',
+                            data: data['pengendalian'],
+                            column: 'desc_pengendalian',
                           ),
                         ),
                       ],
                     ),
 
-                  // Tampilkan accordion pengendalian beserta content di dalamnya
-                  InfoCard(
-                    title: "Pengendalian",
-                    isLast: !showIdentification,
-                    backgroundColor: AppColors.frostedMint,
-                    collapsedBackgroundColor: AppColors.frostedMint,
-                    children: [
-                      DetailInfoCard(
-                        title: "Pengendalian Terpadu",
-                        content: BulletListContent(
-                          data: data['pengendalian'],
-                          column: 'desc_pengendalian',
+                    // Tampilkan accordion identifikasi lanjutan beserta content di dalamnya
+                    InfoCard(
+                      title: "Identifikasi Lanjutan",
+                      isLast: true,
+                      isVisible:
+                          data['identifikasi_lanjutan'] != null &&
+                          data['identifikasi_lanjutan'].isNotEmpty,
+                      backgroundColor: AppColors.frostedMint,
+                      collapsedBackgroundColor: AppColors.frostedMint,
+                      children: [
+                        DetailInfoCard(
+                          title: "Tahapan Identifikasi",
+                          content: BulletListContent(
+                            data: data['identifikasi_lanjutan'],
+                            column: 'desc_langkah',
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  // Tampilkan accordion identifikasi lanjutan beserta content di dalamnya
-                  InfoCard(
-                    title: "Identifikasi Lanjutan",
-                    isLast: true,
-                    isVisible:
-                        data['identifikasi_lanjutan'] != null &&
-                        data['identifikasi_lanjutan'].isNotEmpty,
-                    backgroundColor: AppColors.frostedMint,
-                    collapsedBackgroundColor: AppColors.frostedMint,
-                    children: [
-                      DetailInfoCard(
-                        title: "Tahapan Identifikasi",
-                        content: BulletListContent(
-                          data: data['identifikasi_lanjutan'],
-                          column: 'desc_langkah',
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
