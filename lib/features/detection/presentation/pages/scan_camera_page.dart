@@ -9,6 +9,7 @@ import 'package:opencv_dart/opencv_dart.dart' as cv;
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/controllers/navigation_controller.dart';
@@ -82,46 +83,78 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
   // Inisialisasi kamera
   Future<void> _initializeCamera() async {
-    // Minta izin kamera dan storage sekaligus di awal
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-      Permission.storage,
-    ].request();
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+
+    PermissionStatus cameraStatus;
+    PermissionStatus storageStatus;
+
+    if (sdkInt >= 30) {
+      // Android 11 ke atas
+      cameraStatus = await Permission.camera.request();
+      storageStatus = await Permission.manageExternalStorage.request();
+
+      // Khusus manageExternalStorage apabila statusnya denied
+      if (storageStatus.isDenied) {
+        storageStatus = await Permission.manageExternalStorage.status;
+      }
+    } else {
+      // Android 10 ke bawah
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.camera,
+        Permission.storage,
+      ].request();
+      cameraStatus = statuses[Permission.camera]!;
+      storageStatus = statuses[Permission.storage]!;
+    }
 
     // Cek apakah ada izin yang ditolak
-    if (statuses[Permission.camera]!.isDenied ||
-        statuses[Permission.storage]!.isDenied) {
+    if (cameraStatus.isDenied || storageStatus.isDenied) {
       setState(() {
         _errorMessage = "Wajib mengizinkan kamera dan penyimpanan";
       });
+
+      // Jika permanen ditolak, navigasi ke pengaturan
+      if (cameraStatus.isPermanentlyDenied ||
+          storageStatus.isPermanentlyDenied) {
+        openAppSettings();
+      }
+
       return;
     }
 
-    // Ambil daftar kamera yang tersedia
-    _cameras = await availableCameras();
+    try {
+      // Ambil daftar kamera yang tersedia
+      _cameras = await availableCameras();
 
-    // Pastikan kamera tersedia
-    if (_cameras != null && _cameras!.isNotEmpty) {
-      // Gunakan kamera belakang
-      _controller = CameraController(
-        _cameras![0],
-        ResolutionPreset.max,
-        enableAudio: false,
-      );
+      // Pastikan kamera tersedia
+      if (_cameras != null && _cameras!.isNotEmpty) {
+        // Gunakan kamera belakang
+        _controller = CameraController(
+          _cameras![0],
+          ResolutionPreset.max,
+          enableAudio: false,
+        );
 
-      // Inisialisasi kamera
-      await _controller!.initialize();
+        // Inisialisasi kamera
+        await _controller!.initialize();
 
-      // Ambil range exposure
-      _minExposure = await _controller!.getMinExposureOffset();
-      _maxExposure = await _controller!.getMaxExposureOffset();
+        // Ambil range exposure
+        _minExposure = await _controller!.getMinExposureOffset();
+        _maxExposure = await _controller!.getMaxExposureOffset();
 
-      // Ambil batas minimun dan maksimum zoom
-      _minAvailableZoom = await _controller!.getMinZoomLevel();
-      _maxAvailableZoom = await _controller!.getMaxZoomLevel();
+        // Ambil batas minimun dan maksimum zoom
+        _minAvailableZoom = await _controller!.getMinZoomLevel();
+        _maxAvailableZoom = await _controller!.getMaxZoomLevel();
 
-      // Update tampilan jika widget masih aktif
-      if (mounted) setState(() {});
+        // Update tampilan jika widget masih aktif
+        if (mounted) setState(() {});
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Gagal memuat kamera: $e";
+      });
     }
   }
 
