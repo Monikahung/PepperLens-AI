@@ -35,25 +35,27 @@ class HistoryDeleteDialog extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.frostedMint,
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              color: AppColors.honeydew,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              "Riwayat berhasil dihapus",
-              style: AppTextStyles.manropeTwelve,
-              textAlign: TextAlign.center,
-            ),
-          ],
+        content: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.check_circle_outline,
+                color: AppColors.honeydew,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                "Riwayat berhasil dihapus",
+                style: AppTextStyles.manropeTwelve,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height - 150,
+          bottom: MediaQuery.of(context).size.height - 200,
           left: 20,
           right: 20,
         ),
