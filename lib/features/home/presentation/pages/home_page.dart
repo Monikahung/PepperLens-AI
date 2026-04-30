@@ -53,8 +53,12 @@ class HomePage extends StatelessWidget {
           statusBarColor: AppColors.honeydew,
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.light,
+          systemStatusBarContrastEnforced: false,
+
           systemNavigationBarColor: AppColors.mysticJade,
           systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarDividerColor: AppColors.transparent,
+          systemNavigationBarContrastEnforced: false,
         ),
         child: Scaffold(
           backgroundColor: AppColors.honeydew,

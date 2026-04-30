@@ -26,8 +26,12 @@ class VisualizationPage extends StatelessWidget {
         statusBarColor: AppColors.honeydew,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
+        systemStatusBarContrastEnforced: false,
+
         systemNavigationBarColor: AppColors.mysticJade,
         systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarDividerColor: AppColors.transparent,
+        systemNavigationBarContrastEnforced: false,
       ),
       child: Scaffold(
         backgroundColor: AppColors.honeydew,
@@ -47,14 +51,6 @@ class VisualizationPage extends StatelessWidget {
           ),
           // Teks paling atas pada halaman
           title: const Text("Visualisasi", style: AppTextStyles.manropeFive),
-          // AnnotatedRegion untuk mengontrol tampilan status bar dan navigasi sistem
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: AppColors.honeydew,
-            statusBarIconBrightness: Brightness.dark,
-            statusBarBrightness: Brightness.light,
-            systemNavigationBarColor: AppColors.mysticJade,
-            systemNavigationBarIconBrightness: Brightness.light,
-          ),
         ),
 
         body: SafeArea(
@@ -182,6 +178,11 @@ class VisualizationPage extends StatelessWidget {
               );
             },
           ),
+        ),
+
+        bottomNavigationBar: Container(
+          color: AppColors.mysticJade,
+          child: SafeArea(top: false, child: const SizedBox.shrink()),
         ),
       ),
     );

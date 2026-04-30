@@ -103,8 +103,12 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
             statusBarColor: AppColors.honeydew,
             statusBarIconBrightness: Brightness.dark,
             statusBarBrightness: Brightness.light,
+            systemStatusBarContrastEnforced: false,
+
             systemNavigationBarColor: AppColors.mysticJade,
             systemNavigationBarIconBrightness: Brightness.light,
+            systemNavigationBarDividerColor: AppColors.transparent,
+            systemNavigationBarContrastEnforced: false,
           ),
           child: Scaffold(
             backgroundColor: AppColors.honeydew,
@@ -127,14 +131,6 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
               title: const Text(
                 "Detail Penyakit",
                 style: AppTextStyles.manropeFive,
-              ),
-              // AnnotatedRegion untuk mengontrol tampilan status bar dan navigasi sistem
-              systemOverlayStyle: const SystemUiOverlayStyle(
-                statusBarColor: AppColors.honeydew,
-                statusBarIconBrightness: Brightness.dark,
-                statusBarBrightness: Brightness.light,
-                systemNavigationBarColor: AppColors.mysticJade,
-                systemNavigationBarIconBrightness: Brightness.light,
               ),
             ),
 
@@ -304,6 +300,11 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
                   ],
                 ),
               ),
+            ),
+
+            bottomNavigationBar: Container(
+              color: AppColors.mysticJade,
+              child: SafeArea(top: false, child: const SizedBox.shrink()),
             ),
           ),
         );

@@ -12,6 +12,9 @@ void main() async {
   // Inisialisasi Flutter sebelum menjalankan operasi asynchronous
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Set mode UI sistem
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   // Inisialisasi data format tanggal untuk bahasa Indonesia
   await initializeDateFormatting('id_ID', null);
 
@@ -31,6 +34,16 @@ void main() async {
 
   // Jalankan aplikasi utama
   runApp(const MyApp());
+
+  // Mengatur warna status bar dan navigasi sistem Android
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: AppColors.honeydew,
+      systemNavigationBarColor: AppColors.mysticJade,
+      systemNavigationBarContrastEnforced: false,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -46,8 +59,12 @@ class MyApp extends StatelessWidget {
         statusBarColor: AppColors.honeydew,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
+        systemStatusBarContrastEnforced: false,
+
         systemNavigationBarColor: AppColors.honeydew,
         systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarDividerColor: AppColors.transparent,
+        systemNavigationBarContrastEnforced: false,
       ),
       child: GetMaterialApp(
         title: 'Pepperlens AI',

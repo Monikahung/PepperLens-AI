@@ -527,8 +527,12 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         statusBarColor: AppColors.honeydew,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
+        systemStatusBarContrastEnforced: false,
+
         systemNavigationBarColor: AppColors.mysticJade,
         systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarDividerColor: AppColors.transparent,
+        systemNavigationBarContrastEnforced: false,
       ),
       child: PopScope(
         canPop: false,
@@ -548,6 +552,14 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         },
         child: Scaffold(
           backgroundColor: AppColors.black,
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(0),
+            child: AppBar(
+              backgroundColor: AppColors.honeydew,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+            ),
+          ),
           body: Stack(
             children: [
               // Kamera preview, gesture zoom, exposure, dan fokus kamera
@@ -790,6 +802,10 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
                   ),
                 ),
             ],
+          ),
+          bottomNavigationBar: Container(
+            color: AppColors.mysticJade,
+            child: SafeArea(top: false, child: const SizedBox.shrink()),
           ),
         ),
       ),
