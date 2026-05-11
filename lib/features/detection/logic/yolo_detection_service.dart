@@ -62,7 +62,7 @@ class YoloDetectionService {
         left,
         right,
         cv.BORDER_CONSTANT,
-        value: cv.Scalar(114, 114, 114),
+        value: cv.Scalar(0, 0, 0),
       );
 
       // Konversi warna BGR ke RGB
