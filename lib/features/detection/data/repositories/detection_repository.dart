@@ -38,6 +38,7 @@ class DetectionRepository {
   Future<int> insertResultDetectionToDatabase({
     required String pathOriginal,
     required String pathResult,
+    required String galleryId,
     required double timeProcess,
     required List<Map<String, dynamic>> yoloResults,
   }) async {
@@ -51,6 +52,7 @@ class DetectionRepository {
         'waktu_proses': timeProcess,
         'path_gambar_potret': pathOriginal,
         'path_gambar_deteksi': pathResult,
+        'galeri_id': galleryId,
       };
 
       // Simpan dan dapatkan id hasil deteksi

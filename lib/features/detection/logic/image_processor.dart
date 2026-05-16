@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:opencv_dart/opencv_dart.dart' as cv;
+import 'package:photo_manager/photo_manager.dart';
 
 // Logic untuk menangani pemrosesan gambar
 class ImageProcessor {
@@ -26,6 +28,38 @@ class ImageProcessor {
       mat,
       params: cv.VecI32.fromList([cv.IMWRITE_JPEG_QUALITY, quality]),
     );
+  }
+
+  // Simpan gambar hasil deteksi ke galeri
+  Future<String?> saveImageToGallery(
+    String path, {
+    String albumName = 'PepperLens AI',
+  }) async {
+    try {
+      final file = File(path);
+      if (!await file.exists()) return null;
+
+      // Baca file menjadi bytes
+      final Uint8List bytes = await file.readAsBytes();
+
+      // Buat nama file unik
+      final String fileName =
+          'PepperLens_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Simpan ke galeri publik agar muncul di aplikasi Google Photos atau Gallery
+      final AssetEntity entity = await PhotoManager.editor.saveImage(
+        bytes,
+        filename: fileName,
+        title: fileName,
+        relativePath: 'Pictures/$albumName',
+      );
+
+      // Mengembalikan assetId untuk disimpan ke SQLite
+      return entity.id;
+    } catch (e) {
+      debugPrint("Gagal mendaftarkan ke galeri: $e");
+      return null;
+    }
   }
 
   // Gambar kotak di sekitar objek yang terdeteksi

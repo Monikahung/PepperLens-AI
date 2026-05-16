@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:opencv_dart/opencv_dart.dart' as cv;
-import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -322,7 +321,12 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       final String resultPath =
           '${directory.path}/hasil_${DateTime.now().millisecondsSinceEpoch}.jpg';
       _imageProcessor.saveImage(matResult, resultPath, quality: 95);
-      await Gal.putImage(resultPath, album: 'PepperLens AI');
+      final String? galleryId = await _imageProcessor.saveImageToGallery(
+        resultPath,
+      );
+      if (galleryId == null) {
+        throw "Gagal mendaftarkan gambar ke galeri";
+      }
       matResult.release();
 
       // Hentikan hitung waktu
@@ -337,6 +341,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       int idNewResult = await repo.insertResultDetectionToDatabase(
         pathOriginal: internalPath,
         pathResult: resultPath,
+        galleryId: galleryId,
         timeProcess: timeProcess,
         yoloResults: results,
       );
@@ -460,7 +465,12 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         '_result.jpg',
       );
       _imageProcessor.saveImage(matResult, resultCachePath, quality: 95);
-      await Gal.putImage(resultCachePath, album: 'PepperLens AI');
+      final String? galleryId = await _imageProcessor.saveImageToGallery(
+        resultCachePath,
+      );
+      if (galleryId == null) {
+        throw "Gagal mendaftarkan gambar ke galeri";
+      }
       matResult.release();
 
       // Hentikan hitung waktu
@@ -475,6 +485,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       int idNewResult = await repo.insertResultDetectionToDatabase(
         pathOriginal: internalPath,
         pathResult: resultCachePath,
+        galleryId: galleryId,
         timeProcess: timeProcess,
         yoloResults: results,
       );
