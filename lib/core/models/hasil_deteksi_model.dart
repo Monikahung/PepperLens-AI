@@ -3,6 +3,7 @@ class HasilDeteksiModel {
   final String waktuDeteksi;
   final double waktuProses;
   final String pathGambarPotret;
+  final String galeriId;
   final String pathGambarDeteksi;
 
   // Constructor utama untuk membuat objek Hasil Deteksi
@@ -11,6 +12,7 @@ class HasilDeteksiModel {
     required this.waktuDeteksi,
     required this.waktuProses,
     required this.pathGambarPotret,
+    required this.galeriId,
     required this.pathGambarDeteksi,
   });
 
@@ -21,6 +23,7 @@ class HasilDeteksiModel {
       waktuDeteksi: map['waktu_deteksi'],
       waktuProses: (map['waktu_proses'] as num).toDouble(),
       pathGambarPotret: map['path_gambar_potret'],
+      galeriId: map['galeri_id'],
       pathGambarDeteksi: map['path_gambar_deteksi'],
     );
   }
@@ -32,6 +35,7 @@ class HasilDeteksiModel {
       'waktu_deteksi': waktuDeteksi,
       'waktu_proses': waktuProses,
       'path_gambar_potret': pathGambarPotret,
+      'galeri_id': galeriId,
       'path_gambar_deteksi': pathGambarDeteksi,
     };
   }

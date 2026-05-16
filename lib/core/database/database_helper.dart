@@ -107,6 +107,7 @@ class DatabaseHelper {
         waktu_deteksi TEXT NOT NULL,
         waktu_proses REAL NOT NULL,
         path_gambar_potret TEXT NOT NULL,
+        galeri_id TEXT NOT NULL,
         path_gambar_deteksi TEXT NOT NULL
       )
     ''');
