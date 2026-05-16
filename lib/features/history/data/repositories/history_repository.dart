@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:pepperlens_ai/core/database/database_helper.dart';
+import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
 
 // Kelola pengambilan data hasil dan detail deteksi serta penghapusan data hasil deteksi dari database lokal SQLite
 class HistoryRepository {
@@ -86,6 +87,24 @@ class HistoryRepository {
   Future<void> deleteHistory(int idResult) async {
     final db = await _dbHelper.database;
 
+    // Ambil galeri_id dan path sebelum penghapusan data
+    final List<Map<String, dynamic>> dataQuery = await db.query(
+      'Hasil_Deteksi',
+      where: 'id_hasil_deteksi = ?',
+      whereArgs: [idResult],
+    );
+
+    // Hapus data gambar dari penyimpanan internal dan galeri
+    if (dataQuery.isNotEmpty) {
+      final data = dataQuery.first;
+
+      // Gunakan FileHelper untuk menghapus gambar
+      await FileHelper.deleteGalleryFile(data['galeri_id']);
+      await FileHelper.deleteLocalFile(data['path_gambar_potret']);
+      await FileHelper.deleteLocalFile(data['path_gambar_deteksi']);
+    }
+
+    // Hapus baris data di SQLite
     await db.delete(
       'Hasil_Deteksi',
       where: 'id_hasil_deteksi = ?',

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
-import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
 import 'package:pepperlens_ai/features/history/data/repositories/history_repository.dart';
@@ -189,15 +188,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
                     // Jika mengklik tombol hapus
                     if (confirm == true) {
-                      final String pathDetection = item['path_deteksi'];
-                      final String pathOriginal = item['path_potret'];
-
                       // Hapus data hasil deteksi dari database
                       await _historyRepository.deleteHistory(item['id_hasil']);
-
-                      // Hapus file gambar hasil deteksi dan gambar potret dari penyimpanan lokal
-                      await FileHelper.deleteLocalFile(pathDetection);
-                      await FileHelper.deleteLocalFile(pathOriginal);
 
                       if (!context.mounted) return;
 
