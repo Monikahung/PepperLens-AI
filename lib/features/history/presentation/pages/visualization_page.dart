@@ -134,7 +134,7 @@ class VisualizationPage extends StatelessWidget {
                         ),
 
                         // Jarak antar komponen
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 30),
 
                         // Area visualisasi data berupa diagram batang
                         SizedBox(

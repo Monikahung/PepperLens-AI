@@ -30,15 +30,16 @@ class DiseaseBarChart extends StatelessWidget {
         minY: 0,
         // Jika bar ditekan, menampilkan tooltip
         barTouchData: BarTouchData(
-          enabled: true,
+          enabled: false,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) =>
-                AppColors.darkCyan.withAlpha((0.5 * 255).toInt()),
+            getTooltipColor: (group) => AppColors.transparent,
+            tooltipPadding: EdgeInsets.zero,
+            tooltipMargin: 0,
             tooltipBorderRadius: BorderRadius.circular(8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               return BarTooltipItem(
                 rod.toY.toInt().toString(),
-                AppTextStyles.manropeTwo,
+                AppTextStyles.manropeThirteen,
               );
             },
           ),
@@ -82,15 +83,7 @@ class DiseaseBarChart extends StatelessWidget {
           ),
         ),
         // Grid data untuk diagram batang
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: interval,
-          getDrawingHorizontalLine: (value) => FlLine(
-            color: AppColors.darkCyan.withAlpha((0.05 * 255).toInt()),
-            strokeWidth: 1,
-          ),
-        ),
+        gridData: const FlGridData(show: false),
         // Border data untuk diagram batang
         borderData: FlBorderData(
           show: true,
@@ -174,6 +167,8 @@ class DiseaseBarChart extends StatelessWidget {
           ),
         ),
       ],
+      // Paksa FlChart menampilkan label data rod secara permanen
+      showingTooltipIndicators: [0],
     );
   }
 }
