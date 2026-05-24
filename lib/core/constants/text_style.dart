@@ -112,6 +112,7 @@ class AppTextStyles {
   );
 
   // Teks untuk jumlah deteksi di riwayat
+  // Teks untuk jumlah riwayat pada bar
   static const TextStyle manropeThirteen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -133,6 +134,14 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: Colors.red,
+  );
+
+  // Teks untuk keterangan error perizinan
+  static const TextStyle manropeSixteen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: AppColors.darkCyan,
   );
 
   // -- POPPINS FONT FAMILY --
