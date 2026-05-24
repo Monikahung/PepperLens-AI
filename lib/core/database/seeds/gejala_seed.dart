@@ -40,7 +40,7 @@ class GejalaSeed {
     });
     await txn.insert('Gambar_Gejala', {
       'id_penyakit': idKuning,
-      'path_gambar': 'assets/images/disease_images/yellow_plant.png',
+      'path_gambar': 'assets/images/disease_images/yellow_plant.jpg',
       'keterangan': 'Kondisi Lada Penyakit Kuning',
     });
 
@@ -75,7 +75,7 @@ class GejalaSeed {
     });
     await txn.insert('Gambar_Gejala', {
       'id_penyakit': idBPB,
-      'path_gambar': 'assets/images/disease_images/foot_rot_plant.png',
+      'path_gambar': 'assets/images/disease_images/foot_rot_plant.jpg',
       'keterangan': 'Kondisi Lada Penyakit BPB',
     });
 
@@ -112,7 +112,7 @@ class GejalaSeed {
     });
     await txn.insert('Gambar_Gejala', {
       'id_penyakit': idKeriting,
-      'path_gambar': 'assets/images/disease_images/curl_plant.png',
+      'path_gambar': 'assets/images/disease_images/curl_plant.jpg',
       'keterangan': 'Kondisi Lada Penyakit Keriting',
     });
 
