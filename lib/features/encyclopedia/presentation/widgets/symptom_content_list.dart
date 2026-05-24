@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/widgets/detail_info_card.dart';
 import 'package:pepperlens_ai/core/widgets/bullet_list_content.dart';
+import 'package:pepperlens_ai/core/widgets/image_preview.dart';
 
 // Widget yang menampilkan konten gejala di dalam widget accordion
 class SymptomContentList extends StatelessWidget {
@@ -16,6 +17,42 @@ class SymptomContentList extends StatelessWidget {
     required this.symptomText,
   });
 
+  // Widget pembungkus gambar dengan ikon zoom
+  Widget _buildImageWithZoom(BuildContext context, String path) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: AspectRatio(
+            aspectRatio: 1 / 1,
+            child: Image.asset(
+              path,
+              fit: BoxFit.cover,
+              errorBuilder: (context, e, s) =>
+                  const Icon(Icons.broken_image, color: AppColors.honeydew),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 8,
+          right: 8,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.darkCyan.withAlpha((0.75 * 255).toInt()),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(
+              Icons.zoom_out_map_rounded,
+              color: AppColors.honeydew,
+              size: 20,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // Bangun tampilan widget konten gejala di dalam widget accordion
   @override
   Widget build(BuildContext context) {
@@ -25,19 +62,20 @@ class SymptomContentList extends StatelessWidget {
     children.add(
       DetailInfoCard(
         title: "Kondisi Daun Sehat",
-        content: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.honeydew, width: 1),
+        content: GestureDetector(
+          onTap: () => ImagePreviewDialog.show(
+            context,
+            "assets/images/healthy_leaf.png",
+            isAsset: true,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: AspectRatio(
-              aspectRatio: 1 / 1,
-              child: Image.asset(
-                "assets/images/healthy_leaf.png",
-                fit: BoxFit.cover,
-              ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.honeydew, width: 1),
+            ),
+            child: _buildImageWithZoom(
+              context,
+              "assets/images/healthy_leaf.png",
             ),
           ),
         ),
@@ -68,24 +106,18 @@ class SymptomContentList extends StatelessWidget {
           padding: const EdgeInsets.only(top: 12),
           child: DetailInfoCard(
             title: item['keterangan'] ?? "Kondisi Penyakit",
-            content: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.honeydew, width: 1),
+            content: GestureDetector(
+              onTap: () => ImagePreviewDialog.show(
+                context,
+                item['path_gambar'],
+                isAsset: true,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: AspectRatio(
-                  aspectRatio: 1 / 1,
-                  child: Image.asset(
-                    item['path_gambar'],
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, e, s) => const Icon(
-                      Icons.broken_image,
-                      color: AppColors.honeydew,
-                    ),
-                  ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.honeydew, width: 1),
                 ),
+                child: _buildImageWithZoom(context, item['path_gambar']),
               ),
             ),
           ),

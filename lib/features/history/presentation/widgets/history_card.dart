@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
+import 'package:pepperlens_ai/core/widgets/image_preview.dart';
 
 // Widget kartu riwayat deteksi untuk halaman riwayat
 class HistoryCard extends StatelessWidget {
@@ -116,7 +117,11 @@ class HistoryCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
-          onTap: () => _showImageDialog(context, fileExists),
+          onTap: () {
+            if (fileExists) {
+              ImagePreviewDialog.show(context, imagePath, isAsset: false);
+            }
+          },
           child: Stack(
             children: [
               Container(
@@ -147,7 +152,7 @@ class HistoryCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Icon(
-                      Icons.zoom_in,
+                      Icons.zoom_out_map_rounded,
                       color: AppColors.honeydew,
                       size: 20,
                     ),
@@ -185,74 +190,6 @@ class HistoryCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // Dialog untuk menampilkan gambar hasil deteksi
-  void _showImageDialog(BuildContext context, bool fileExists) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.honeydew, width: 2),
-                    color: AppColors.honeydew,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: !fileExists
-                        ? Container(
-                            height: 200,
-                            width: double.infinity,
-                            color: AppColors.frostedMint,
-                            child: const Icon(Icons.broken_image, size: 40),
-                          )
-                        : InteractiveViewer(
-                            panEnabled: true,
-                            minScale: 0.5,
-                            maxScale: 4.0,
-                            child: Image.file(
-                              File(imagePath),
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                  ),
-                ),
-
-                // Tombol untuk menutup dialog
-                Positioned(
-                  right: 10,
-                  top: 10,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: const BoxDecoration(
-                        color: AppColors.honeydew,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        color: AppColors.darkCyan,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
