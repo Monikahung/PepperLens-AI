@@ -27,9 +27,9 @@ class FileHelper {
   }
 
   // Menghapus file dari galeri
-  static Future<void> deleteGalleryFile(String assetId) async {
+  static Future<bool> deleteGalleryFile(String assetId) async {
     // Mengecek apakah assetId kosong
-    if (assetId.isEmpty) return;
+    if (assetId.isEmpty) return false;
 
     try {
       // PhotoManager akan meminta izin sistem
@@ -38,9 +38,14 @@ class FileHelper {
       ]);
       if (result.isNotEmpty) {
         debugPrint("Berhasil hapus gambar: $assetId");
+        return true;
+      } else {
+        debugPrint("Pengguna menolak untuk menghapus gambar: $assetId");
+        return false;
       }
     } catch (e) {
       debugPrint("Gagal menghapus gambar: $e");
+      return false;
     }
   }
 }

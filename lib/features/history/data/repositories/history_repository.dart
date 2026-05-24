@@ -66,6 +66,7 @@ class HistoryRepository {
         'id_hasil': idMaster,
         'tanggal': date,
         'waktu': time,
+        'asset_id': master['galeri_id'],
         'path_potret': master['path_gambar_potret'],
         'path_deteksi': master['path_gambar_deteksi'],
         'penyakit_data': details
@@ -87,19 +88,18 @@ class HistoryRepository {
   Future<void> deleteHistory(int idResult) async {
     final db = await _dbHelper.database;
 
-    // Ambil galeri_id dan path sebelum penghapusan data
+    // Ambil path internal sebelum penghapusan data
     final List<Map<String, dynamic>> dataQuery = await db.query(
       'Hasil_Deteksi',
       where: 'id_hasil_deteksi = ?',
       whereArgs: [idResult],
     );
 
-    // Hapus data gambar dari penyimpanan internal dan galeri
+    // Hapus data gambar dari penyimpanan internal
     if (dataQuery.isNotEmpty) {
       final data = dataQuery.first;
 
       // Gunakan FileHelper untuk menghapus gambar
-      await FileHelper.deleteGalleryFile(data['galeri_id']);
       await FileHelper.deleteLocalFile(data['path_gambar_potret']);
       await FileHelper.deleteLocalFile(data['path_gambar_deteksi']);
     }

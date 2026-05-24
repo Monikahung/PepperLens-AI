@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
+import 'package:pepperlens_ai/features/history/presentation/widgets/snackbar.dart';
+import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
 import 'package:pepperlens_ai/features/history/data/repositories/history_repository.dart';
@@ -181,23 +183,36 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                   onDelete: () async {
                     // Tampilkan dialog konfirmasi sebelum menghapus riwayat
-                    bool? confirm = await showDialog(
+                    bool? confirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => HistoryDeleteDialog(),
                     );
 
                     // Jika mengklik tombol hapus
                     if (confirm == true) {
-                      // Hapus data hasil deteksi dari database
-                      await _historyRepository.deleteHistory(item['id_hasil']);
+                      final String assetId = item['asset_id'] ?? '';
+                      
+                      // Coba hapus dari galeri, tapi jangan jadikan penghalang jika gagal
+                      if (assetId.isNotEmpty) {
+                        await FileHelper.deleteGalleryFile(assetId);
+                      }
+
+                      // Hapus data dari database dan penyimpanan lokal aplikasi
+                      await _historyRepository.deleteHistory(
+                        item['id_hasil'],
+                      );
 
                       if (!context.mounted) return;
 
-                      // Trigger UI refresh untuk mengambil data terbaru
+                      // Refresh UI
                       setState(() {});
 
-                      // Tampilkan snackbar sukses jika penghapusan berhasil
-                      HistoryDeleteDialog.showSuccessSnackBar(context);
+                      // Tampilkan snackbar sukses
+                      Snackbar.showSnackbar(
+                        context,
+                        message: "Riwayat berhasil dihapus",
+                        isSuccess: true,
+                      );
                     }
                   },
                 );
@@ -209,3 +224,4 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
+                      // Tampilkan snackbar sukses jika penghapusan berhasil
