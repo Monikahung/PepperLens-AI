@@ -84,6 +84,7 @@ class AppTextStyles {
   );
 
   // Teks untuk deskripsi widget di detail penyakit
+  // Teks untuk skor kepercayaan di dialog preview hasil deteksi
   static const TextStyle manropeTen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -142,6 +143,14 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.darkCyan,
+  );
+
+  // Teks untuk nama penyakit di dialog preview hasil deteksi
+  static const TextStyle manropeSeventeen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    color: AppColors.honeydew,
   );
 
   // -- POPPINS FONT FAMILY --
