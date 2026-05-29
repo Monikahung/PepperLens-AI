@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
-import 'package:pepperlens_ai/features/history/presentation/widgets/snackbar.dart';
+import 'package:pepperlens_ai/features/history/presentation/widgets/custom_snackbar.dart';
 import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
@@ -33,6 +33,20 @@ class _HistoryPageState extends State<HistoryPage> {
     'Tahun ini',
     'Semua',
   ];
+
+  @override
+  void dispose() {
+    // Tunda eksekusi pembersihan snackbar sampai render frame halaman ini selesai dihancurkan
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Periksa apakah context global milik GetX aktif
+      if (Get.context != null) {
+        // Hapus semua snackbar yang ada
+        ScaffoldMessenger.of(Get.context!).clearSnackBars();
+      }
+    });
+    // Kembalikan fungsi dispose ke kelas induk
+    super.dispose();
+  }
 
   // Bangun tampilan halaman riwayat deteksi penyakit
   @override
@@ -106,6 +120,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         }
                       },
                       onVisualisasiTap: () {
+                        ScaffoldMessenger.of(context).clearSnackBars();
                         Get.to(
                           () => VisualizationPage(filter: _selectedCategory),
                         );
@@ -164,6 +179,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       }
                     },
                     onVisualisasiTap: () {
+                      ScaffoldMessenger.of(context).clearSnackBars();
                       Get.to(
                         () => VisualizationPage(filter: _selectedCategory),
                       );
@@ -191,24 +207,22 @@ class _HistoryPageState extends State<HistoryPage> {
                     // Jika mengklik tombol hapus
                     if (confirm == true) {
                       final String assetId = item['asset_id'] ?? '';
-                      
+
                       // Coba hapus dari galeri, tapi jangan jadikan penghalang jika gagal
                       if (assetId.isNotEmpty) {
                         await FileHelper.deleteGalleryFile(assetId);
                       }
 
                       // Hapus data dari database dan penyimpanan lokal aplikasi
-                      await _historyRepository.deleteHistory(
-                        item['id_hasil'],
-                      );
+                      await _historyRepository.deleteHistory(item['id_hasil']);
 
                       if (!context.mounted) return;
 
                       // Refresh UI
                       setState(() {});
 
-                      // Tampilkan snackbar sukses
-                      Snackbar.showSnackbar(
+                      // Tampilkan snackbar sukses jika penghapusan berhasil
+                      CustomSnackbar.showSnackbar(
                         context,
                         message: "Riwayat berhasil dihapus",
                         isSuccess: true,
@@ -224,4 +238,3 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
-                      // Tampilkan snackbar sukses jika penghapusan berhasil
