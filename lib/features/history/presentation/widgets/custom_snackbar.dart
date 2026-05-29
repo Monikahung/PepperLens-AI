@@ -3,13 +3,17 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 
 // Snackbar untuk menampilkan pesan sukses atau gagal penghapusan riwayat deteksi
-class Snackbar {
+class CustomSnackbar {
   // Fungsi untuk menampilkan snackbar
   static void showSnackbar(
     BuildContext context, {
     required String message,
     bool isSuccess = true,
   }) {
+    // Menghapus snackbar sebelumnya jika ada
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    // Menampilkan snackbar baru dengan pesan yang diberikan
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: isSuccess ? AppColors.frostedMint : Colors.redAccent,
