@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/widgets/detail_info_card.dart';
 import 'package:pepperlens_ai/core/widgets/bullet_list_content.dart';
-import 'package:pepperlens_ai/core/widgets/image_preview.dart';
+import 'package:pepperlens_ai/core/widgets/image_preview_dialog.dart';
 
 // Widget yang menampilkan konten gejala di dalam widget accordion
 class SymptomContentList extends StatelessWidget {

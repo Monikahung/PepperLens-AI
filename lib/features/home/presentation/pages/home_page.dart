@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:pepperlens_ai/core/widgets/banner.dart';
-import 'package:pepperlens_ai/core/widgets/navbar.dart';
+import 'package:pepperlens_ai/core/widgets/custom_banner.dart';
+import 'package:pepperlens_ai/core/widgets/custom_navbar.dart';
 import 'package:pepperlens_ai/core/constants/assets.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';

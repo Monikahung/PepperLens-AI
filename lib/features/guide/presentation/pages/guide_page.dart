@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pepperlens_ai/core/widgets/banner.dart';
+import 'package:pepperlens_ai/core/widgets/custom_banner.dart';
 import 'package:pepperlens_ai/core/widgets/bullet_list_content.dart';
 import 'package:pepperlens_ai/core/widgets/info_card.dart';
 import 'package:pepperlens_ai/core/constants/assets.dart';

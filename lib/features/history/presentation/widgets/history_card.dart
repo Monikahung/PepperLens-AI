@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
-import 'package:pepperlens_ai/core/widgets/image_preview.dart';
+import 'package:pepperlens_ai/core/widgets/image_preview_dialog.dart';
 
 // Widget kartu riwayat deteksi untuk halaman riwayat
 class HistoryCard extends StatelessWidget {
