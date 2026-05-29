@@ -51,23 +51,35 @@ class VisualizationMapper {
   static Map<String, double> calculateChartScale(Map<int, double> chartData) {
     // Deklarasi variabel untuk interval dan maxY
     double maxData = chartData.values.isEmpty
-        ? 1
+        ? 0
         : chartData.values.reduce((a, b) => a > b ? a : b);
 
     double interval;
     double dynamicMaxY;
 
     // Penentuan interval dan maxY berdasarkan data tertinggi
-    if (maxData <= 10) {
+    if (maxData <= 5) {
       interval = 1;
-      dynamicMaxY = maxData == 0 ? 5 : maxData.ceilToDouble();
-    } else if (maxData <= 20) {
+      dynamicMaxY = 5;
+    } else if (maxData <= 10) {
       interval = 2;
-      dynamicMaxY = (maxData / 2).ceil() * 2;
-    } else {
+      dynamicMaxY = 10;
+    } else if (maxData <= 30) {
       interval = 5;
       dynamicMaxY = (maxData / 5).ceil() * 5;
+    } else if (maxData <= 100) {
+      interval = 20;
+      dynamicMaxY = (maxData / 20).ceil() * 20;
+    } else if (maxData <= 500) {
+      interval = 100;
+      dynamicMaxY = (maxData / 100).ceil() * 100;
+    } else {
+      interval = 500;
+      dynamicMaxY = (maxData / 500).ceil() * 500;
     }
+
+    // Tambahkan ekstra ruang satu langkah interval di atas nilai maksimal
+    dynamicMaxY += interval;
 
     // Mengembalikan interval dan maxY
     return {'interval': interval, 'maxY': dynamicMaxY};

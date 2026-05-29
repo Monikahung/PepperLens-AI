@@ -20,6 +20,16 @@ class DiseaseBarChart extends StatelessWidget {
     final interval = scale['interval']!;
     final dynamicMaxY = scale['maxY']!;
 
+    // Ukuran default jarak sumbu Y untuk diagram batang
+    double dynamicReservedSize = 26.0;
+
+    // Mengatur jarak sumbu Y berdasarkan nilai maksimum
+    if (dynamicMaxY >= 1000) {
+      dynamicReservedSize = 38.0;
+    } else if (dynamicMaxY >= 100) {
+      dynamicReservedSize = 36.0;
+    }
+
     // Mengembalikan visualisasi data berupa diagram batang
     return BarChart(
       BarChartData(
@@ -67,7 +77,7 @@ class DiseaseBarChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 26,
+              reservedSize: dynamicReservedSize,
               interval: interval,
               getTitlesWidget: (value, meta) {
                 return SideTitleWidget(
@@ -76,6 +86,8 @@ class DiseaseBarChart extends StatelessWidget {
                   child: Text(
                     value.toInt().toString(),
                     style: AppTextStyles.manropeOne,
+                    maxLines: 1,
+                    softWrap: false,
                   ),
                 );
               },
