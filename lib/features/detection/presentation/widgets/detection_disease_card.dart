@@ -29,40 +29,47 @@ class DetectionDiseaseCard extends StatelessWidget {
         color: AppColors.mysticJade,
         borderRadius: BorderRadius.circular(15),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(15),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    // Judul nama penyakit yang terdeteksi
-                    child: Text(title, style: AppTextStyles.poppinsFour),
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: 15,
+          left: 15,
+          right: 15,
+          bottom: 23,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Judul nama penyakit yang terdeteksi
+                Expanded(child: Text(title, style: AppTextStyles.poppinsFour)),
+                // Icon panah
+                GestureDetector(
+                  onTap: onTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 16, top: 8, bottom: 8),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      color: AppColors.honeydew,
+                      size: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  // Icon panah
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    color: AppColors.honeydew,
-                    size: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
 
-              const SizedBox(height: 15),
+            // Jarak antar komponen
+            const SizedBox(height: 15),
 
-              // Gambar cropping penyakit yang terdeteksi
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: children,
-              ),
-            ],
-          ),
+            // Gambar cropping penyakit yang terdeteksi
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: children,
+            ),
+          ],
         ),
       ),
     );

@@ -10,6 +10,8 @@ import 'package:pepperlens_ai/features/detection/presentation/widgets/detection_
 import 'package:pepperlens_ai/features/detection/data/repositories/detection_repository.dart';
 import 'package:pepperlens_ai/features/encyclopedia/presentation/pages/encyclopedia_detail_page.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/crop_preview.dart';
+import 'package:pepperlens_ai/features/detection/presentation/widgets/result_preview.dart';
+import 'package:pepperlens_ai/features/detection/presentation/widgets/detail_result_preview.dart';
 import 'package:pepperlens_ai/features/detection/presentation/widgets/result_image_header.dart';
 
 // Halaman utama untuk menampilkan hasil deteksi beserta cropping gambar untuk setiap penyakit yang terdeteksi
@@ -185,7 +187,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                       final List<Map<String, dynamic>> items = entry.value;
 
                       return LayoutBuilder(
-                        builder: (context, constraints) {
+                        builder: (ctx, constraints) {
                           // Konfigurasi jumlah gambar crop berdasarkan lebar layar
                           int crossAxisCount = constraints.maxWidth < 360
                               ? 3
@@ -207,38 +209,73 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                               ? maxVisible - 1
                               : items.length;
 
-                          // Tampilkan gambar header hasil deteksi
+                          // Tampilkan sebagian gambar crop hasil deteksi
                           List<Widget> cardContent = items
                               .take(displayCount)
-                              .map<Widget>((detection) {
-                                return CropPreview(
-                                  originalPath: header['path_gambar_potret'],
-                                  detection: detection,
-                                  size: dynamicBoxSize,
+                              .toList()
+                              .asMap()
+                              .entries
+                              .map<Widget>((mapEntry) {
+                                int itemIdx = mapEntry.key;
+                                var detection = mapEntry.value;
+
+                                return GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  // Arahkan ke dialog cropping hasil deteksi
+                                  onTap: () {
+                                    DetailResultPreview.show(
+                                      context,
+                                      title: entry.key,
+                                      originalPath:
+                                          header['path_gambar_potret'],
+                                      diseaseItems: items,
+                                      initialIndex: itemIdx,
+                                    );
+                                  },
+                                  // Tampilkan kotak crop hasil deteksi
+                                  child: CropPreview(
+                                    originalPath: header['path_gambar_potret'],
+                                    detection: detection,
+                                    size: dynamicBoxSize,
+                                  ),
                                 );
                               })
                               .toList();
 
                           // Jika ada kelebihan gambar crop, tampilkan indikator "+X"
                           if (hasMore) {
+                            int extraCount = items.length - displayCount;
                             cardContent.add(
-                              Container(
-                                width: dynamicBoxSize,
-                                height: dynamicBoxSize,
-                                decoration: BoxDecoration(
-                                  color: AppColors.darkCyan.withAlpha(
-                                    (0.75 * 255).toInt(),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                // Arahkan ke dialog kumpulan cropping hasil deteksi
+                                onTap: () {
+                                  ResultPreview.show(
+                                    context,
+                                    title: entry.key,
+                                    originalPath: header['path_gambar_potret'],
+                                    diseaseItems: items,
+                                  );
+                                },
+                                // Tampilkan kotak dengan indikator "+X"
+                                child: Container(
+                                  width: dynamicBoxSize,
+                                  height: dynamicBoxSize,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.darkCyan.withAlpha(
+                                      (0.75 * 255).toInt(),
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppColors.honeydew,
+                                      width: 1,
+                                    ),
                                   ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: AppColors.honeydew,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "+${items.length - displayCount}",
-                                    style: AppTextStyles.poppinsFour,
+                                  child: Center(
+                                    child: Text(
+                                      "+$extraCount",
+                                      style: AppTextStyles.poppinsFour,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -248,6 +285,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                           // Pemanggilan widget untuk menampilkan daftar penyakit yang terdeteksi beserta detailnya
                           return DetectionDiseaseCard(
                             title: entry.key,
+                            // Arahkan ke halaman detail penyakit
                             onTap: () => Get.to(
                               () => EncyclopediaDetailPage(
                                 diseaseId: entry.value.first['id_penyakit'],
@@ -271,6 +309,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                 ),
               ),
             ),
+
             bottomNavigationBar: Container(
               color: AppColors.mysticJade,
               child: SafeArea(top: false, child: const SizedBox.shrink()),
