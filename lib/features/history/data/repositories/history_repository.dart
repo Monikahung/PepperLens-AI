@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:pepperlens_ai/core/database/database_helper.dart';
-import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
+import 'package:pepperlens_ai/features/history/logic/delete_file_helper.dart';
 
 // Kelola pengambilan data hasil dan detail deteksi serta penghapusan data hasil deteksi dari database lokal SQLite
 class HistoryRepository {
@@ -100,8 +100,8 @@ class HistoryRepository {
       final data = dataQuery.first;
 
       // Gunakan FileHelper untuk menghapus gambar
-      await FileHelper.deleteLocalFile(data['path_gambar_potret']);
-      await FileHelper.deleteLocalFile(data['path_gambar_deteksi']);
+      await DeleteFileHelper.deleteLocalFile(data['path_gambar_potret']);
+      await DeleteFileHelper.deleteLocalFile(data['path_gambar_deteksi']);
     }
 
     // Hapus baris data di SQLite

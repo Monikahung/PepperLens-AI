@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 // Logic untuk menghapus file dari penyimpanan internal
-class FileHelper {
+class DeleteFileHelper {
   // Menghapus file dari penyimpanan internal
   static Future<void> deleteLocalFile(String path) async {
     // Mengecek apakah path kosong
