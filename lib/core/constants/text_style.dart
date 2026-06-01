@@ -153,6 +153,16 @@ class AppTextStyles {
     color: AppColors.honeydew,
   );
 
+  // Teks notifikasi untuk membuka dokumen yang berhasil diunduh
+  static const TextStyle manropeEighteen = TextStyle(
+    fontFamily: 'Manrope',
+    fontSize: 12,
+    fontWeight: FontWeight.w800,
+    decoration: TextDecoration.underline,
+    decorationThickness: 6,
+    color: AppColors.honeydew,
+  );
+
   // -- POPPINS FONT FAMILY --
 
   // Teks untuk label navbar
