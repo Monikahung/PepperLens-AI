@@ -111,4 +111,79 @@ class HistoryRepository {
       whereArgs: [idResult],
     );
   }
+
+  // Ambil data detail deteksi berdasarkan filter yang dipilih
+  Future<List<Map<String, dynamic>>> getDetailHistoryDetection({
+    String filter = 'Semua',
+  }) async {
+    final db = await _dbHelper.database;
+    String whereClause = '';
+
+    // Jika filter 'Hari ini'
+    if (filter == 'Hari ini') {
+      whereClause = "WHERE date(waktu_deteksi) = date('now', 'localtime')";
+    }
+    // Jika filter 'Bulan ini'
+    else if (filter == 'Bulan ini') {
+      whereClause =
+          "WHERE strftime('%Y-%m', waktu_deteksi) = strftime('%Y-%m', 'now', 'localtime')";
+    }
+    // Jika filter 'Tahun ini'
+    else if (filter == 'Tahun ini') {
+      whereClause =
+          "WHERE strftime('%Y', waktu_deteksi) = strftime('%Y', 'now', 'localtime')";
+    }
+
+    // Ambil data hasil deteksi
+    final List<Map<String, dynamic>> masterData = await db.rawQuery('''
+      SELECT * FROM Hasil_Deteksi $whereClause
+      ORDER BY waktu_deteksi DESC
+    ''');
+
+    // Variabel untuk menyimpan data hasil deteksi yang lengkap dengan detailnya
+    List<Map<String, dynamic>> results = [];
+
+    // Iterasi melalui data hasil deteksi
+    for (var master in masterData) {
+      int idMaster = master['id_hasil_deteksi'];
+
+      // Ambil data detail penyakit beserta nilai confidence berdasarkan id hasil deteksi
+      final List<Map<String, dynamic>> details = await db.rawQuery(
+        '''
+        SELECT p.id_penyakit, p.nama_penyakit, d.confidence
+        FROM Detail_Deteksi d
+        JOIN Penyakit p ON d.id_penyakit = p.id_penyakit
+        WHERE d.id_hasil_deteksi = ?
+      ''',
+        [idMaster],
+      );
+
+      // Format tanggal dan waktu
+      String rawIsoDate = master['waktu_deteksi'];
+      DateTime dateTime = DateTime.parse(rawIsoDate);
+      String date = DateFormat('dd MMMM yyyy', 'id_ID').format(dateTime);
+      String time = DateFormat('HH:mm:ss').format(dateTime);
+
+      // Tambahkan data yang telah diformat ke dalam variabel results
+      results.add({
+        'id_hasil': idMaster,
+        'tanggal': date,
+        'waktu': time,
+        'asset_id': master['galeri_id'],
+        'path_potret': master['path_gambar_potret'],
+        'path_deteksi': master['path_gambar_deteksi'],
+        'penyakit_data': details
+            .map(
+              (d) => {
+                'id': d['id_penyakit'],
+                'nama': d['nama_penyakit'],
+                'confidence': d['confidence'],
+              },
+            )
+            .toList(),
+      });
+    }
+
+    return results;
+  }
 }

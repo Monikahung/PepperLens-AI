@@ -4,12 +4,13 @@ import 'package:get/get.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/custom_snackbar.dart';
-import 'package:pepperlens_ai/features/history/logic/file_helper.dart';
+import 'package:pepperlens_ai/features/history/logic/delete_file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
 import 'package:pepperlens_ai/features/history/data/repositories/history_repository.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_header_actions.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_delete_dialog.dart';
+import 'package:pepperlens_ai/features/history/logic/pdf_export_helper.dart';
 
 // Halaman riwayat yang menampilkan daftar riwayat deteksi penyakit
 class HistoryPage extends StatefulWidget {
@@ -25,6 +26,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
   // State untuk menyimpan kategori filter yang dipilih pengguna
   String _selectedCategory = 'Semua';
+
+  // State untuk melacak apakah sedang mendownload data hasil deteksi
+  bool _isDownloading = false;
 
   // Daftar kategori yang tersedia untuk filter
   final List<String> _categories = [
@@ -119,13 +123,24 @@ class _HistoryPageState extends State<HistoryPage> {
                           });
                         }
                       },
+                      // Halaman visualisasi masih kosong
                       onVisualisasiTap: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         Get.to(
                           () => VisualizationPage(filter: _selectedCategory),
                         );
                       },
+                      // Download gagal karena data masih kosong
+                      onDownloadTap: () {
+                        CustomSnackbar.showSnackbar(
+                          context,
+                          message: 'Data riwayat masih kosong',
+                          isSuccess: false,
+                        );
+                      },
+                      isDownloading: _isDownloading,
                     ),
+                    // Halaman riwayat masih kosong
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -178,12 +193,38 @@ class _HistoryPageState extends State<HistoryPage> {
                         });
                       }
                     },
+                    // Halaman visualisasi sudah ada data
                     onVisualisasiTap: () {
                       ScaffoldMessenger.of(context).clearSnackBars();
                       Get.to(
                         () => VisualizationPage(filter: _selectedCategory),
                       );
                     },
+                    // Download data hasil deteksi
+                    onDownloadTap: () async {
+                      // State bernilai true
+                      setState(() => _isDownloading = true);
+
+                      try {
+                        // Ambil data dari repository sesuai filter
+                        final pdfData = await _historyRepository
+                            .getDetailHistoryDetection(
+                              filter: _selectedCategory,
+                            );
+
+                        // Generate dokumen berbentuk PDF
+                        await PdfExportHelper.generateAndOpenReport(
+                          category: _selectedCategory,
+                          historyData: pdfData,
+                        );
+                      } catch (e) {
+                        debugPrint("Error: $e");
+                      } finally {
+                        // State bernilai false
+                        if (mounted) setState(() => _isDownloading = false);
+                      }
+                    },
+                    isDownloading: _isDownloading,
                   );
                 }
 
@@ -210,7 +251,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
                       // Coba hapus dari galeri, tapi jangan jadikan penghalang jika gagal
                       if (assetId.isNotEmpty) {
-                        await FileHelper.deleteGalleryFile(assetId);
+                        await DeleteFileHelper.deleteGalleryFile(assetId);
                       }
 
                       // Hapus data dari database dan penyimpanan lokal aplikasi
