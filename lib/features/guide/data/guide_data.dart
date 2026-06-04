@@ -33,6 +33,7 @@ class GuideData {
       "steps": [
         "Sistem menampilkan gambar dengan bounding box pada bagian daun yang terdeteksi.",
         "Ditampilkan jenis penyakit yang teridentifikasi pada daun lada.",
+        "Ditampilkan hasil crop setiap area untuk melihat detail kondisi daun.",
         "Pilih penyakit untuk melihat informasi lebih lanjut, seperti deskripsi singkat, gejala, pengendalian, dan identifikasi lanjutan.",
       ],
     },
@@ -44,6 +45,7 @@ class GuideData {
       "steps": [
         "Menyediakan informasi mengenai empat penyakit pada tanaman lada.",
         "Pilih penyakit untuk melihat informasi lebih lanjut, seperti gambar, deskripsi singkat, gejala, penyebab, pengendalian, dan identifikasi lanjutan.",
+        "Ketuk gambar gejala dan perbesar untuk melihat detail lebih jelas.",
       ],
     },
     // Data panduan kelima (riwayat)
@@ -53,8 +55,9 @@ class GuideData {
       "imagePath": "assets/images/guide_images/history.jpg",
       "steps": [
         "Menampilkan riwayat hasil deteksi yang pernah dilakukan.",
-        "Riwayat dapat dikategorikan berdasarkan hari, bulan, tahun, atau semua data.",
-        "Tersedia visualisasi diagram batang untuk menampilkan jumlah hasil deteksi sesuai kategori yang dipilih.",
+        "Riwayat dapat dikategorikan berdasarkan hari, minggu, bulan, tahun, atau semua data.",
+        "Tersedia visualisasi diagram batang untuk menampilkan jumlah hasil deteksi sesuai kategori dan rentang periode yang dipilih.",
+        "Data riwayat deteksi dapat diunduh dalam format PDF sesuai kategori dan rentang periode yang dipilih.",
       ],
     },
     // Data panduan keenam (tentang sistem)
