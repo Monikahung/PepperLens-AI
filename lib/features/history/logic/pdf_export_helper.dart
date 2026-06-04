@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_filex/open_filex.dart';
@@ -13,6 +15,23 @@ import 'package:pepperlens_ai/features/history/presentation/widgets/custom_snack
 
 // Logic untuk generate PDF data riwayat deteksi penyakit
 class PdfExportHelper {
+  // Fungsi untuk kompresi gambar sebelum masuk PDF
+  static Future<Uint8List?> _compressImage(String filePath) async {
+    final file = File(filePath);
+    if (!file.existsSync()) return null;
+
+    // Menghitung target resolusi
+    final result = await FlutterImageCompress.compressWithFile(
+      file.absolute.path,
+      minWidth: 900,
+      minHeight: 900,
+      quality: 75,
+      format: CompressFormat.jpeg,
+    );
+
+    return result;
+  }
+
   // Fungsi untuk generate PDF dan buka PDF
   static Future<void> generateAndOpenReport({
     required String category,
@@ -35,6 +54,7 @@ class PdfExportHelper {
         "assets/fonts/times_new_roman/timesbi.ttf",
       );
 
+      // Terapkan tema font global formal untuk dokumen PDF
       pdf = pw.Document(
         theme: pw.ThemeData.withFont(
           base: pw.Font.ttf(fontData),
@@ -44,12 +64,26 @@ class PdfExportHelper {
         ),
       );
     } catch (fontError) {
+      // Penanganan jika aset font gagal dimuat
+      String snackbarCategory = category.contains('-') ? "Kustom" : category;
+
       CustomSnackbar.showDownloadSnackbar(
         Get.context!,
-        category: category,
+        category: snackbarCategory,
         isSuccess: false,
       );
       return;
+    }
+
+    // Kompres semua gambar secara asinkron sebelum masuk ke struktur widget PDF
+    List<Uint8List?> compressedImages = [];
+    for (final item in historyData) {
+      if (item['path_deteksi'] != null) {
+        final compressedBytes = await _compressImage(item['path_deteksi']);
+        compressedImages.add(compressedBytes);
+      } else {
+        compressedImages.add(null);
+      }
     }
 
     // Membangun struktur halaman PDF
@@ -63,6 +97,94 @@ class PdfExportHelper {
 
         // Header dokumen PDF
         header: (pw.Context context) {
+          final now = DateTime.now();
+          DateTime startDate = now;
+          DateTime endDate = now;
+          String periodLabel = category.toUpperCase();
+
+          // Cek jika kategori kostum atau bukan
+          if (category.contains('-')) {
+            periodLabel = "KUSTOM";
+          } else {
+            switch (category) {
+              case 'Hari ini':
+                // Gunakan tanggal hari ini
+                startDate = now;
+                endDate = now;
+                break;
+              case 'Minggu ini':
+                // Gunakan tanggal mulai dari hari Senin hingga hari Minggu
+                int daysToMonday = now.weekday - DateTime.monday;
+                startDate = now.subtract(Duration(days: daysToMonday));
+                endDate = startDate.add(const Duration(days: 6));
+                break;
+              case 'Bulan ini':
+                // Gunakan tangggal dari tanggal pertama hingga tanggal terakhir dari bulan ini
+                startDate = DateTime(now.year, now.month, 1);
+                endDate = DateTime(now.year, now.month + 1, 0);
+                break;
+              case 'Tahun ini':
+                // Gunakan tanggal dari tanggal pertama hingga tanggal terakhir dari tahun ini
+                startDate = DateTime(now.year, 1, 1);
+                endDate = DateTime(now.year, 12, 31);
+                break;
+              case 'Semua':
+              default:
+                periodLabel = "SEMUA PERIODE DATA";
+                // Ambil rekaman tanggal terlama hingga terbaru dari SQLite
+                if (historyData.isNotEmpty) {
+                  return pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      // Teks judul
+                      pw.Text(
+                        "Pengujian Deteksi Penyakit di Lapangan",
+                        style: pw.TextStyle(
+                          fontSize: 12,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+
+                      // Jarak antar komponen
+                      pw.SizedBox(height: 4),
+
+                      // Teks kategori
+                      pw.Text(
+                        "Kategori Rentang Periode: $periodLabel (${historyData.last['tanggal']} s/d ${historyData.first['tanggal']})",
+                        style: const pw.TextStyle(
+                          fontSize: 10,
+                          color: PdfColors.black,
+                        ),
+                      ),
+
+                      // Garis pemisah dengan tabel
+                      pw.Divider(thickness: 1, color: PdfColors.black),
+                      pw.SizedBox(height: 10),
+                    ],
+                  );
+                }
+                break;
+            }
+          }
+
+          // Format tanggal lokal
+          final dateFormatter = DateFormat('dd MMMM yyyy', 'id_ID');
+
+          // Gabungkan teks rentang tanggal sesuai kategori terpilih
+          String dateRangeString;
+          if (category.contains('-')) {
+            dateRangeString = "($category)";
+          } else if (category == 'Semua') {
+            dateRangeString = historyData.isNotEmpty
+                ? "(${historyData.last['tanggal']} s/d ${historyData.first['tanggal']})"
+                : "";
+          } else if (category == 'Hari ini') {
+            dateRangeString = "(${dateFormatter.format(startDate)})";
+          } else {
+            dateRangeString =
+                "(${dateFormatter.format(startDate)} s/d ${dateFormatter.format(endDate)})";
+          }
+
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -80,7 +202,7 @@ class PdfExportHelper {
 
               // Teks kategori
               pw.Text(
-                "Kategori Rentang Periode: ${category.toUpperCase()}",
+                "Kategori Rentang Periode: ${periodLabel.toUpperCase()} $dateRangeString",
                 style: const pw.TextStyle(fontSize: 10, color: PdfColors.black),
               ),
 
@@ -142,15 +264,14 @@ class PdfExportHelper {
                   final item = historyData[index];
                   final globalIndex = index + 1;
                   final List<dynamic> diseaseList = item['penyakit_data'] ?? [];
+                  final double inferenceTime =
+                      (item['waktu_proses'] as num?)?.toDouble() ?? 0.0;
 
                   // Widget gambar hasil deteksi penyakit
-                  pw.Widget imageWidget =
-                      (item['path_deteksi'] != null &&
-                          File(item['path_deteksi']).existsSync())
+                  final imgBytes = compressedImages[index];
+                  pw.Widget imageWidget = (imgBytes != null)
                       ? pw.Image(
-                          pw.MemoryImage(
-                            File(item['path_deteksi']).readAsBytesSync(),
-                          ),
+                          pw.MemoryImage(imgBytes),
                           fit: pw.BoxFit.contain,
                         )
                       : pw.Text(
@@ -169,17 +290,31 @@ class PdfExportHelper {
                         ),
                       ),
 
-                      // Gambar hasil deteksi penyakit
+                      // Gambar hasil deteksi penyakit beserta lama proses dan total objek aktual
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Column(
                           children: [
+                            // Lama proses deteksi penyakit
+                            pw.Text(
+                              "Durasi Proses: $inferenceTime detik",
+                              style: pw.TextStyle(fontSize: 10),
+                            ),
+
+                            // Jarak antar komponen
+                            pw.SizedBox(height: 4),
+
+                            // Gambar hasil deteksi penyakit
                             pw.Container(
                               height: 165,
                               width: 165,
                               child: imageWidget,
                             ),
+
+                            // Jarak antar komponen
                             pw.SizedBox(height: 4),
+
+                            // Total objek aktual
                             pw.Text(
                               "Total Objek Aktual*: ......",
                               style: pw.TextStyle(
@@ -431,20 +566,29 @@ class PdfExportHelper {
       // Simpan file PDF ke storage perangkat
       await File(filePath).writeAsBytes(await pdf.save());
 
+      // Jika kategori mengandung tanda pisah, artinya periode kustom
+      String snackbarCategory = category;
+      if (category.contains('-')) {
+        snackbarCategory = "Kustom";
+      }
+
       // Jika berhasil disimpan, tampilkan snackbar dan buka file PDF
       CustomSnackbar.showDownloadSnackbar(
         Get.context!,
-        category: category,
+        category: snackbarCategory,
         isSuccess: true,
         onOpenTap: () async {
           await OpenFilex.open(filePath);
         },
       );
     } catch (e) {
+      // Jika gagal disimpan, potong label kategori
+      String snackbarCategory = category.contains('-') ? "Kustom" : category;
+
       // Jika gagal simpan file PDF
       CustomSnackbar.showDownloadSnackbar(
         Get.context!,
-        category: category,
+        category: snackbarCategory,
         isSuccess: false,
       );
     }
