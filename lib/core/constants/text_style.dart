@@ -6,6 +6,7 @@ class AppTextStyles {
 
   // Teks untuk sub judul menu
   // Teks error
+  // Teks periode di visualisasi
   static const TextStyle manropeOne = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -15,6 +16,7 @@ class AppTextStyles {
 
   // Teks untuk deskripsi penyakit ensiklopedia
   // Teks error
+  // Teks periode di kalender
   static const TextStyle manropeTwo = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 12,
@@ -23,6 +25,7 @@ class AppTextStyles {
   );
 
   // Teks untuk judul menu
+  // Teks untuk judul visualisasi
   static const TextStyle manropeThree = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 16,
@@ -56,8 +59,11 @@ class AppTextStyles {
   );
 
   // Teks untuk judul content di accordion
+  // Teks tombol buka pengaturan dan coba lagi
   // Teks untuk dropdown list kategori
   // Teks untuk tombol visualisasi
+  // Teks filter kategori di visualisasi
+  // Teks tombol terapkan di kalender
   static const TextStyle manropeSeven = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -67,6 +73,7 @@ class AppTextStyles {
 
   // Teks untuk nama penyakit di halaman detail penyakit
   // Teks untuk judul hapus riwayat
+  // Teks untuk judul pilih periode riwayat
   static const TextStyle manropeEight = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 18,
@@ -76,6 +83,7 @@ class AppTextStyles {
 
   // Teks untuk deskripsi penyakit di halaman detail penyakit
   // Teks untuk deskripsi hapus riwayat
+  // Teks untuk teks radio button filter kategori
   static const TextStyle manropeNine = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -85,6 +93,7 @@ class AppTextStyles {
 
   // Teks untuk deskripsi widget di detail penyakit
   // Teks untuk skor kepercayaan di dialog preview hasil deteksi
+  // Teks untuk deskripsi catatan
   static const TextStyle manropeTen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -93,6 +102,8 @@ class AppTextStyles {
   );
 
   // Teks untuk keterangan di halaman ambil gambar
+  // Teks untuk pesan loading dan pesan eror saat proses deteksi
+  // Tombol unduh hasil deteksi
   static const TextStyle manropeEleven = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -122,6 +133,7 @@ class AppTextStyles {
   );
 
   // Tombol batal pada dialog hapus riwayat
+  // Teks rentang periode di filter kategori untuk unduh
   static const TextStyle manropeFourteen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -130,6 +142,7 @@ class AppTextStyles {
   );
 
   // Tombol hapus pada dialog hapus riwayat
+  // Tombol batal pada dialog filter kategori untuk unduh
   static const TextStyle manropeFifteen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -138,6 +151,7 @@ class AppTextStyles {
   );
 
   // Teks untuk keterangan error perizinan
+  // Teks kalender
   static const TextStyle manropeSixteen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 14,
@@ -146,6 +160,7 @@ class AppTextStyles {
   );
 
   // Teks untuk nama penyakit di dialog preview hasil deteksi
+  // Teks untuk judul pilih rentang waktu
   static const TextStyle manropeSeventeen = TextStyle(
     fontFamily: 'Manrope',
     fontSize: 18,
@@ -195,6 +210,7 @@ class AppTextStyles {
   // Teks untuk judul nama penyakit di hasil deteksi
   // Teks di kotak hitam sebagai tanda jumlah cropping
   // Teks untuk label dan skor hasil deteksi penyakit
+  // Teks untuk judul catatan
   static const TextStyle poppinsFour = TextStyle(
     fontFamily: 'Poppins',
     fontSize: 16,
