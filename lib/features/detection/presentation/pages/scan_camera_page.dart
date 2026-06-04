@@ -27,7 +27,8 @@ class ScanCameraPage extends StatefulWidget {
   State<ScanCameraPage> createState() => _ScanCameraPageState();
 }
 
-class _ScanCameraPageState extends State<ScanCameraPage> {
+class _ScanCameraPageState extends State<ScanCameraPage>
+    with WidgetsBindingObserver {
   // Controller utama kamera
   CameraController? _controller;
 
@@ -62,6 +63,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
   String _loadingMessage = "";
   String? _errorMessage;
   bool _isLoadingPermission = true;
+  bool _isInitializing = false;
 
   // Image picker untuk ambil gambar dari galeri
   final ImagePicker _picker = ImagePicker();
@@ -69,11 +71,18 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
   // Variabel pengunci picker
   bool _isPickerActive = false;
 
+  // Variabel untuk mencatat status penolakan permanen
+  bool _isPermanentlyDenied = false;
+
+  // Variabel untuk status buka pengaturan
+  bool _isOpeningSettings = false;
+
   // Panggil saat widget pertama kali dibuat
   @override
   void initState() {
     super.initState();
-    _initializeCameraStorage();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeCameraStorage(isFromResumed: false);
     _yoloService.initModel().catchError((e) {
       setState(() {
         _errorMessage = "Gagal memuat AI: $e";
@@ -81,67 +90,116 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
     });
   }
 
-  // Inisialisasi kamera dan penyimpanan
-  Future<void> _initializeCameraStorage() async {
-    final deviceInfo = DeviceInfoPlugin();
-    final androidInfo = await deviceInfo.androidInfo;
-    final sdkInt = androidInfo.version.sdkInt;
-
-    PermissionStatus cameraStatus;
-    PermissionStatus storageStatus;
-
-    // Perizinan kamera
-    cameraStatus = await Permission.camera.request();
-
-    // Perizinan penyimpanan berdasarkan versi Android
-    if (sdkInt >= 33) {
-      // Android 13 ke atas
-      storageStatus = await Permission.photos.request();
-    } else {
-      // Android 12 ke bawah
-      storageStatus = await Permission.storage.request();
-    }
-
-    // Cek apakah kedua izin yang dikabulkan
-    if (cameraStatus.isGranted && storageStatus.isGranted) {
-      if (mounted) {
-        setState(() {
-          _isLoadingPermission = false;
-          _errorMessage = null;
-        });
-      }
-      // Jika diizinkan, lanjut inisialisasi kamera
-      _startCamera();
-    } else if (cameraStatus.isPermanentlyDenied ||
-        storageStatus.isPermanentlyDenied) {
-      // Jika tidak diizinkan, tampilkan pesan dan arahkan ke pengaturan
+  // Fungsi bawaan WidgetsBindingObserver
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isOpeningSettings) {
       setState(() {
-        _isLoadingPermission = false;
-        _errorMessage = "Izin ditolak permanen. Aktifkan di Pengaturan";
+        _isOpeningSettings = false;
       });
+      // Jalankan ulang pengecekan izin secara otomatis
+      _initializeCameraStorage(isFromResumed: true);
+    }
+  }
 
-      // Arahkan ke pengaturan
-      await Future.delayed(const Duration(seconds: 2));
-      openAppSettings();
-    } else {
-      // Jika ditolak biasa (isDenied), beri tahu alasan perizinan penting
-      if (mounted) {
-        setState(() {
-          _isLoadingPermission = false;
-          _errorMessage = "Akses Kamera dan Galeri diperlukan untuk deteksi";
-        });
+  // Inisialisasi kamera dan penyimpanan
+  Future<void> _initializeCameraStorage({bool isFromResumed = false}) async {
+    try {
+      // Ambil informasi perangkat untuk mengecek versi SDK Android
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+
+      // Cek status izin kamera saat ini
+      PermissionStatus cameraStatus = await Permission.camera.status;
+
+      // Tentukan izin penyimpanan berdasarkan versi SDK Android
+      // Keterangan: SDK 33 itu Android versi 13
+      PermissionStatus storageStatus = (sdkInt >= 33)
+          ? await Permission.photos.status
+          : await Permission.storage.status;
+
+      // Alur permintaan izin jika tidak dipanggil dari siklus aplikasi 'resumed'
+      if (!isFromResumed) {
+        // Minta izin kamera jika belum diizinkan dan tidak ditolak permanen
+        if (!cameraStatus.isGranted && !cameraStatus.isPermanentlyDenied) {
+          cameraStatus = await Permission.camera.request();
+        }
+
+        // Perbarui status izin penyimpanan sebelum meminta
+        storageStatus = (sdkInt >= 33)
+            ? await Permission.photos.status
+            : await Permission.storage.status;
+
+        // Minta izin penyimpanan jika belum diizinkan dan tidak ditolak permanen
+        if (!storageStatus.isGranted && !storageStatus.isPermanentlyDenied) {
+          storageStatus = (sdkInt >= 33)
+              ? await Permission.photos.request()
+              : await Permission.storage.request();
+        }
       }
+
+      // Sinkronisasi ulang status izin terakhir setelah proses permintaan selesai
+      cameraStatus = await Permission.camera.status;
+      storageStatus = (sdkInt >= 33)
+          ? await Permission.photos.status
+          : await Permission.storage.status;
+
+      // Kondisi apabila kedua izin (Kamera & Penyimpanan) diberikan
+      if (cameraStatus.isGranted && storageStatus.isGranted) {
+        if (mounted) {
+          setState(() {
+            _isLoadingPermission = false;
+            _errorMessage = null;
+            _isPermanentlyDenied = false;
+          });
+        }
+        await _startCamera();
+      }
+      // Kondisi apabila salah satu atau kedua izin secara permanen ditolak oleh pengguna
+      else if (cameraStatus.isPermanentlyDenied ||
+          storageStatus.isPermanentlyDenied) {
+        if (mounted) {
+          setState(() {
+            _isLoadingPermission = false;
+            _isPermanentlyDenied = true;
+            _errorMessage = "Izin ditolak permanen. Aktifkan di Pengaturan";
+          });
+        }
+      }
+      // Kondisi apabila izin ditolak biasa (minta kembali di kesempatan berikutnya)
+      else {
+        if (mounted) {
+          setState(() {
+            _isLoadingPermission = false;
+            _isPermanentlyDenied = false;
+            _errorMessage = "Akses Kamera dan Galeri diperlukan untuk deteksi";
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error pada inisialisasi izin: $e");
     }
   }
 
   // Nyalakan kamera
   Future<void> _startCamera() async {
+    // Cegah inisialisasi ganda jika proses sebelumnya masih berjalan
+    if (_isInitializing) return;
+    _isInitializing = true;
+
     try {
       // Ambil daftar kamera yang tersedia
       _cameras = await availableCameras();
 
       // Pastikan kamera tersedia
       if (_cameras != null && _cameras!.isNotEmpty) {
+        // Buang dulu jika sudah ada controller aktif sebelumnya
+        if (_controller != null) {
+          await _controller!.dispose();
+          _controller = null;
+        }
+
         // Gunakan kamera belakang
         _controller = CameraController(
           _cameras![0],
@@ -168,15 +226,21 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         }
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = "Gagal memuat kamera: $e";
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = "Gagal memuat kamera: $e";
+        });
+      }
+    } finally {
+      _isInitializing = false;
     }
   }
 
   // Bersihkan resource saat widget dihapus
   @override
   void dispose() {
+    // Bersihkan observer saat widget dihancurkan
+    WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
     super.dispose();
   }
@@ -293,6 +357,9 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       _imageProcessor.saveImage(matRaw, internalPath, quality: 70);
       matRaw.release();
 
+      // Jeda OS untuk mendaftarkan file mentah ke storage internal
+      await Future.delayed(const Duration(milliseconds: 300));
+
       // Tahap pre-processing gambar
       setState(() => _loadingMessage = "Mendeteksi penyakit");
       await Future.delayed(const Duration(milliseconds: 200));
@@ -320,7 +387,9 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
         });
 
         // Hapus gambar mentah
-        if (await File(sourcePath).exists()) await File(sourcePath).delete();
+        if (await File(internalPath).exists()) {
+          await File(internalPath).delete();
+        }
 
         // Keluar dari fungsi
         return;
@@ -338,6 +407,10 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       final String resultPath =
           '${directory.path}/hasil_${DateTime.now().millisecondsSinceEpoch}.jpg';
       _imageProcessor.saveImage(matResult, resultPath, quality: 95);
+
+      // Jeda OS untuk mengunci hasil sebelum didaftarkan ke galeri
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final String? galleryId = await _imageProcessor.saveImageToGallery(
         resultPath,
       );
@@ -435,6 +508,9 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       _imageProcessor.saveImage(matRaw, internalPath, quality: 70);
       matRaw.release();
 
+      // Jeda untuk mengunci file mentah di folder dokumen permanen
+      await Future.delayed(const Duration(milliseconds: 300));
+
       // Tahap pre-processing gambar
       setState(() => _loadingMessage = "Mendeteksi penyakit");
       await Future.delayed(const Duration(milliseconds: 200));
@@ -461,8 +537,11 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
           }
         });
 
-        // Hapus gambar mentah
+        // Hapus cache kamera dan gambar mentah
         if (await File(cachePath).exists()) await File(cachePath).delete();
+        if (await File(internalPath).exists()) {
+          await File(internalPath).delete();
+        }
 
         // Keluar dari fungsi
         return;
@@ -471,19 +550,21 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
       // Tahap penggambaran kotak hasil deteksi
       setState(() => _loadingMessage = "Mengolah hasil deteksi");
       await Future.delayed(const Duration(milliseconds: 200));
-      cv.Mat matResult = cv.imread(cachePath);
+      cv.Mat matResult = cv.imread(internalPath);
       _imageProcessor.drawBoundingBoxes(matResult, results);
 
       // Tahap penyimpanan hasil
       setState(() => _loadingMessage = "Menyimpan hasil deteksi");
       await Future.delayed(const Duration(milliseconds: 200));
-      final String resultCachePath = cachePath.replaceAll(
-        '.jpg',
-        '_result.jpg',
-      );
-      _imageProcessor.saveImage(matResult, resultCachePath, quality: 95);
+      final String resultPath =
+          '${directory.path}/hasil_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      _imageProcessor.saveImage(matResult, resultPath, quality: 95);
+
+      // Jeda OS untuk menulis berkas hasil olahan ke storage internal
+      await Future.delayed(const Duration(milliseconds: 200));
+
       final String? galleryId = await _imageProcessor.saveImageToGallery(
-        resultCachePath,
+        resultPath,
       );
       if (galleryId == null) {
         throw "Gagal mendaftarkan gambar ke galeri";
@@ -501,7 +582,7 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
 
       int idNewResult = await repo.insertResultDetectionToDatabase(
         pathOriginal: internalPath,
-        pathResult: resultCachePath,
+        pathResult: resultPath,
         galleryId: galleryId,
         timeProcess: timeProcess,
         yoloResults: results,
@@ -577,19 +658,28 @@ class _ScanCameraPageState extends State<ScanCameraPage> {
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () {
-                      setState(() {
-                        _isLoadingPermission = true;
-                        _errorMessage = null;
-                      });
-                      _initializeCameraStorage();
+                      if (_isPermanentlyDenied) {
+                        // Jika permanen, arahkan langsung ke pengaturan aplikasi
+                        setState(() {
+                          _isOpeningSettings = true;
+                        });
+                        openAppSettings();
+                      } else {
+                        // Jika tidak permanen, minta izin kembali
+                        setState(() {
+                          _isLoadingPermission = true;
+                          _errorMessage = null;
+                        });
+                        _initializeCameraStorage(isFromResumed: false);
+                      }
                     },
-                    icon: const Icon(
-                      Icons.refresh,
+                    icon: Icon(
+                      _isPermanentlyDenied ? Icons.settings : Icons.refresh,
                       color: AppColors.honeydew,
                       fontWeight: FontWeight.bold,
                     ),
-                    label: const Text(
-                      "Coba Lagi",
+                    label: Text(
+                      _isPermanentlyDenied ? "Buka Pengaturan" : "Coba Lagi",
                       style: AppTextStyles.manropeSeven,
                     ),
                     style: ElevatedButton.styleFrom(
