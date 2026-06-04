@@ -4,7 +4,7 @@ import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 
 // Widget untuk menampilkan gambar header di halaman detail penyakit
-class DiseaseDetailHeader extends StatelessWidget {
+class DiseaseDetailHeader extends StatefulWidget {
   // Atribut yang digunakan untuk menampilkan gambar header di halaman detail penyakit
   final String? originalImagePath;
   final List<Map<String, dynamic>>? detectionResults;
@@ -12,6 +12,7 @@ class DiseaseDetailHeader extends StatelessWidget {
   final String mainImagePath;
   final bool hasNoImage;
   final String Function(String?) getShortLabel;
+  final Function(bool) onZoomChanged;
 
   // Instance dari DiseaseDetailHeader dengan parameter wajib diisi
   const DiseaseDetailHeader({
@@ -22,7 +23,49 @@ class DiseaseDetailHeader extends StatelessWidget {
     required this.mainImagePath,
     required this.hasNoImage,
     required this.getShortLabel,
+    required this.onZoomChanged,
   });
+
+  @override
+  State<DiseaseDetailHeader> createState() => _DiseaseDetailHeaderState();
+}
+
+class _DiseaseDetailHeaderState extends State<DiseaseDetailHeader> {
+  // Controller untuk memantau perubahan zoom gambar
+  final TransformationController _transformationController =
+      TransformationController();
+  bool _showZoomIcon = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listener untuk mendeteksi saat pengguna melakukan zoom
+    _transformationController.addListener(_handleTransformationChanged);
+  }
+
+  @override
+  void dispose() {
+    // Bersihkan listener dan controller saat widget dihancurkan
+    _transformationController.removeListener(_handleTransformationChanged);
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  // Function untuk mengecek tingkat zoom gambar secara real-time
+  void _handleTransformationChanged() {
+    final double currentScale = _transformationController.value
+        .getMaxScaleOnAxis();
+
+    // Jika skala mendekati 1.0, tampilkan ikon zoom
+    // Jika skala melebihi 1.0, sembunyikan ikon zoom
+    final bool shouldShow = currentScale <= 1.01;
+
+    if (_showZoomIcon != shouldShow) {
+      setState(() {
+        _showZoomIcon = shouldShow;
+      });
+    }
+  }
 
   // Dapatkan ukuran gambar berdasarkan path gambar
   Future<Size> _getImageSize(String imagePath) async {
@@ -42,9 +85,60 @@ class DiseaseDetailHeader extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: originalImagePath != null && detectionResults != null
-            ? _buildDetectionStack()
-            : _buildNormalImage(),
+        child: Stack(
+          children: [
+            // Gambar header penyakit
+            InteractiveViewer(
+              transformationController: _transformationController,
+              panEnabled: true,
+              scaleEnabled: true,
+              minScale: 0.5,
+              maxScale: 4.0,
+              clipBehavior: Clip.hardEdge,
+              interactionEndFrictionCoefficient: 0.00001,
+              // Matikan scroll jika terdapat minimal 2 jari (cubit zoom)
+              onInteractionStart: (ScaleStartDetails details) {
+                if (details.pointerCount >= 2) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    widget.onZoomChanged(false);
+                  });
+                }
+              },
+              // Ketika interaksi selesai, aktifkan scroll halaman
+              onInteractionEnd: (ScaleEndDetails details) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  widget.onZoomChanged(true);
+                });
+              },
+              child:
+                  widget.originalImagePath != null &&
+                      widget.detectionResults != null
+                  ? _buildDetectionStack()
+                  : _buildNormalImage(),
+            ),
+
+            // Ikon zoom
+            if (_showZoomIcon &&
+                !widget.hasNoImage &&
+                widget.mainImagePath.isNotEmpty)
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.darkCyan.withAlpha((0.75 * 255).toInt()),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(
+                    Icons.zoom_out_map_rounded,
+                    color: AppColors.honeydew,
+                    size: 20,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -53,7 +147,7 @@ class DiseaseDetailHeader extends StatelessWidget {
   Widget _buildNormalImage() {
     return AspectRatio(
       aspectRatio: 1 / 1,
-      child: hasNoImage || mainImagePath.isEmpty
+      child: widget.hasNoImage || widget.mainImagePath.isEmpty
           ? Container(
               color: AppColors.frostedMint,
               child: const Icon(
@@ -63,7 +157,7 @@ class DiseaseDetailHeader extends StatelessWidget {
               ),
             )
           : Image.asset(
-              mainImagePath,
+              widget.mainImagePath,
               fit: BoxFit.cover,
               errorBuilder: (context, e, s) => Container(
                 color: AppColors.frostedMint,
@@ -79,7 +173,7 @@ class DiseaseDetailHeader extends StatelessWidget {
   // Jika ditemukan gambar potret dan hasil deteksinya, tampilkan gambar hasil deteksi beserta bounding box dan labelnya
   Widget _buildDetectionStack() {
     return FutureBuilder<Size>(
-      future: _getImageSize(originalImagePath!),
+      future: _getImageSize(widget.originalImagePath!),
       builder: (context, sizeSnapshot) {
         if (!sizeSnapshot.hasData) return const SizedBox();
 
@@ -96,14 +190,14 @@ class DiseaseDetailHeader extends StatelessWidget {
                   children: [
                     // Gambar potret asli
                     Image.file(
-                      File(originalImagePath!),
+                      File(widget.originalImagePath!),
                       width: constraints.maxWidth,
                       fit: BoxFit.fitWidth,
                     ),
 
                     // Loop bounding box dan label
-                    ...detectionResults!
-                        .where((res) => res['id_penyakit'] == diseaseId)
+                    ...widget.detectionResults!
+                        .where((res) => res['id_penyakit'] == widget.diseaseId)
                         .expand((res) {
                           // Konversi data koordinat dari database ke double
                           double x = (res['x'] as num).toDouble() * scale;
@@ -113,7 +207,7 @@ class DiseaseDetailHeader extends StatelessWidget {
 
                           // Ambil warna sesuai id penyakit
                           Color diseaseColor = AppColors.getDiseaseColor(
-                            diseaseId,
+                            widget.diseaseId,
                           );
 
                           return [
@@ -140,7 +234,7 @@ class DiseaseDetailHeader extends StatelessWidget {
                               child: FractionalTranslation(
                                 translation: Offset(0.0, -1.0),
                                 child: Text(
-                                  "${getShortLabel(res['nama_penyakit'])} ${(res['confidence'] as num).round()}%",
+                                  "${widget.getShortLabel(res['nama_penyakit'])} ${(res['confidence'] as num).round()}%",
                                   style: AppTextStyles.poppinsFour.copyWith(
                                     color: diseaseColor,
                                     fontWeight: FontWeight.w700,

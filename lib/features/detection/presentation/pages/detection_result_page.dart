@@ -29,16 +29,20 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
   // Inisialisasi repository untuk akses data hasil deteksi beserta detailnya
   final DetectionRepository _repository = DetectionRepository();
 
+  // Variabel penampung future
+  bool _isScrolled = true;
+
+  // Variabel penampung future
+  late Future<Map<String, dynamic>> _fetchDataFuture;
+
   @override
   void initState() {
     super.initState();
     // Inisialisasi format tanggal bahasa Indonesia
     initializeDateFormatting('id_ID', null);
-  }
 
-  // Ambil data lengkap hasil deteksi beserta detailnya dari database
-  Future<Map<String, dynamic>> _fetchFullData() async {
-    return await _repository.getCompleteDetectionResult(widget.idResult);
+    // Kunci pemicu query database agar berjalan saat halaman diklik
+    _fetchDataFuture = _repository.getCompleteDetectionResult(widget.idResult);
   }
 
   // Kelompokkan hasil deteksi berdasarkan nama penyakitnya
@@ -64,7 +68,7 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>>(
-      future: _fetchFullData(),
+      future: _fetchDataFuture,
       // Jika sedang menunggu data dari database, tampilkan loading
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -137,6 +141,10 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
               bottom: true,
               top: false,
               child: SingleChildScrollView(
+                // Hubungkan physics dengan variabel kontrol scroll
+                physics: _isScrolled
+                    ? const BouncingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
                 // Padding untuk menampilkan content di bawah appBar
                 padding: const EdgeInsets.only(
                   left: 20,
@@ -155,6 +163,11 @@ class _DetectionResultPageState extends State<DetectionResultPage> {
                           !File(header['path_gambar_deteksi']).existsSync(),
                       date: _formatDateTime(header['waktu_deteksi']),
                       processTime: header['waktu_proses'].toString(),
+                      onZoomChanged: (canScroll) {
+                        setState(() {
+                          _isScrolled = canScroll;
+                        });
+                      },
                     ),
 
                     // Jarak antar komponen

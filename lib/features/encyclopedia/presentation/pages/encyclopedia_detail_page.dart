@@ -33,6 +33,19 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
   // Inisialisasi repository untuk akses data penyakit
   final EncyclopediaRepository _repository = EncyclopediaRepository();
 
+  // Variabel kontrol scroll
+  bool _isScrolled = true;
+
+  // Variabel penampung future
+  late Future<Map<String, dynamic>?> _diseaseDetailFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Kunci pemicu query database agar berjalan sekali saat halaman dibuka
+    _diseaseDetailFuture = _repository.getDiseaseDetail(widget.diseaseId);
+  }
+
   // Konversi nama penyakit menjadi label penyakit
   String _getShortLabel(String? fullName) {
     if (fullName == null) return "Unknown";
@@ -55,7 +68,7 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>?>(
-      future: _repository.getDiseaseDetail(widget.diseaseId),
+      future: _diseaseDetailFuture,
       builder: (context, snapshot) {
         // Jika sedang menunggu data dari database, tampilkan loading
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -138,6 +151,10 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
               bottom: true,
               top: false,
               child: SingleChildScrollView(
+                // Hubungkan physics dengan variabel kontrol scroll
+                physics: _isScrolled
+                    ? const BouncingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
                 // Padding untuk menampilkan content di bawah appBar
                 padding: const EdgeInsets.only(
                   left: 20,
@@ -149,56 +166,19 @@ class _EncyclopediaDetailPageState extends State<EncyclopediaDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Tampilkan gambar utama berupa gambar tanaman lada atau gambar daun lada yang terserang penyakit serta gambar hasil deteksi pada kondisi tertentu
-                    widget.originalImagePath != null &&
-                            widget.detectionResults != null
-                        ?
-                          // Jika ada gambar hasil deteksi, tampilkan gambar hasil deteksi beserta kotak bounding box (menu deteksi)
-                          DiseaseDetailHeader(
-                            originalImagePath: widget.originalImagePath,
-                            detectionResults: widget.detectionResults,
-                            diseaseId: widget.diseaseId,
-                            mainImagePath: mainImagePath,
-                            hasNoImage: hasNoImage,
-                            getShortLabel: _getShortLabel,
-                          )
-                        :
-                          // Jika tidak ada gambar hasil deteksi, tampilkan gambar tanaman lada atau daun lada yang terserang penyakit (menu ensiklopedia)
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: AppColors.mysticJade,
-                                width: 2,
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(18),
-                              child: AspectRatio(
-                                aspectRatio: 1 / 1,
-                                child: hasNoImage || mainImagePath.isEmpty
-                                    ? Container(
-                                        color: AppColors.frostedMint,
-                                        child: const Icon(
-                                          Icons.broken_image,
-                                          color: AppColors.honeydew,
-                                          size: 40,
-                                        ),
-                                      )
-                                    : Image.asset(
-                                        mainImagePath,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, e, s) =>
-                                            Container(
-                                              color: AppColors.frostedMint,
-                                              child: const Icon(
-                                                Icons.broken_image,
-                                                color: AppColors.honeydew,
-                                              ),
-                                            ),
-                                      ),
-                              ),
-                            ),
-                          ),
+                    DiseaseDetailHeader(
+                      originalImagePath: widget.originalImagePath,
+                      detectionResults: widget.detectionResults,
+                      diseaseId: widget.diseaseId,
+                      mainImagePath: mainImagePath,
+                      hasNoImage: hasNoImage,
+                      getShortLabel: _getShortLabel,
+                      onZoomChanged: (canScroll) {
+                        setState(() {
+                          _isScrolled = canScroll;
+                        });
+                      },
+                    ),
 
                     // Jarak antar komponen
                     const SizedBox(height: 20),
