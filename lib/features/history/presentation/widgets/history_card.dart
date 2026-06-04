@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/core/widgets/image_preview_dialog.dart';
@@ -10,6 +11,8 @@ class HistoryCard extends StatelessWidget {
   final String date;
   final String time;
   final String imagePath;
+  final String timeProcess;
+  final String assetId;
   final List<Map<String, dynamic>> diseasesData;
   final VoidCallback? onDelete;
 
@@ -19,17 +22,47 @@ class HistoryCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.imagePath,
+    required this.timeProcess,
+    required this.assetId,
     required this.diseasesData,
     this.onDelete,
   });
 
+  // Memuat gambar hasil deteksi dari dua kondisi
+  Future<File?> _loadImageHistory() async {
+    // Jika gambar di storage aplikasi ada
+    if (imagePath.isNotEmpty) {
+      final internalFile = File(imagePath);
+      if (await internalFile.exists()) {
+        debugPrint("Gambar dimuat dari penyimpanan internal");
+        return internalFile;
+      }
+    }
+
+    // Jika gambar di storage aplikasi tidak ada, coba memuat dari galeri
+    if (assetId.isNotEmpty) {
+      debugPrint("File internal hilang! Mencoba memulihkan dari galeri");
+      try {
+        // Meminta izin untuk mengakses galeri
+        final PermissionState permission =
+            await PhotoManager.requestPermissionExtend();
+        if (permission.isAuth) {
+          final AssetEntity? asset = await AssetEntity.fromId(assetId);
+          if (asset != null) {
+            return await asset.file;
+          }
+        }
+      } catch (e) {
+        debugPrint("Gagal memuat gambar dari galeri: $e");
+      }
+    }
+
+    return null;
+  }
+
   // Bangun tampilan kartu riwayat deteksi
   @override
   Widget build(BuildContext context) {
-    // Validasi apakah file gambar ada di penyimpanan lokal
-    final bool fileExists =
-        imagePath.isNotEmpty && File(imagePath).existsSync();
-
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -42,8 +75,11 @@ class HistoryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Tanggal dan waktu
-              Text("$date  $time", style: AppTextStyles.manropeTwelve),
+              // Tanggal, waktu, dan lama proses
+              Text(
+                "$date   |   $time   |   $timeProcess Detik",
+                style: AppTextStyles.manropeTwelve,
+              ),
               // Tombol hapus
               GestureDetector(
                 onTap: onDelete,
@@ -59,6 +95,7 @@ class HistoryCard extends StatelessWidget {
             ],
           ),
 
+          // Jarak antar komponen
           const SizedBox(height: 15),
 
           // Gambar hasil deteksi dan detail penyakit
@@ -66,8 +103,14 @@ class HistoryCard extends StatelessWidget {
             child: Row(
               children: [
                 // Gambar pratinjau hasil deteksi
-                _buildImagePreview(context, fileExists),
+                FutureBuilder<File?>(
+                  future: _loadImageHistory(),
+                  builder: (context, snapshot) {
+                    return _buildImagePreview(context, snapshot);
+                  },
+                ),
 
+                // Jarak antar komponen
                 const SizedBox(width: 15),
 
                 // Deskripsi detail penyakit
@@ -75,8 +118,10 @@ class HistoryCard extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: diseasesData.asMap().entries.map((entry) {
+                      // Penampung indeks
                       int index = entry.key;
 
+                      // Penampung nama penyakit dan jumlah deteksi
                       String originalName = entry.value['nama'];
                       String count = entry.value['jumlah'].toString();
 
@@ -94,7 +139,10 @@ class HistoryCard extends StatelessWidget {
                         displayName = "Daun Penyakit $originalName";
                       }
 
+                      // Ambil status apakah data terakhir atau tidak
                       bool isLastItem = index == diseasesData.length - 1;
+
+                      // Bangun widget item penyakit
                       return _buildDiseaseItem(displayName, count, isLastItem);
                     }).toList(),
                   ),
@@ -108,7 +156,13 @@ class HistoryCard extends StatelessWidget {
   }
 
   // Widget untuk menampilkan pratinjau gambar hasil deteksi dengan fitur tap-to-zoom
-  Widget _buildImagePreview(BuildContext context, bool fileExists) {
+  Widget _buildImagePreview(
+    BuildContext context,
+    AsyncSnapshot<File?> snapshot,
+  ) {
+    final File? imageFile = snapshot.data;
+    final bool hasImage = snapshot.hasData && imageFile != null;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -118,8 +172,9 @@ class HistoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
           onTap: () {
-            if (fileExists) {
-              ImagePreviewDialog.show(context, imagePath, isAsset: false);
+            // Tampilkan gambar jika ada
+            if (hasImage) {
+              ImagePreviewDialog.show(context, imageFile.path, isAsset: false);
             }
           },
           child: Stack(
@@ -128,20 +183,31 @@ class HistoryCard extends StatelessWidget {
                 width: 100,
                 height: 100,
                 color: AppColors.frostedMint,
-                child: fileExists
+                child: snapshot.connectionState == ConnectionState.waiting
+                    // Jika gambar sedang dimuat
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.honeydew,
+                        ),
+                      )
+                    // Jika gambar ada
+                    : hasImage
                     ? Image.file(
-                        File(imagePath),
+                        imageFile,
                         fit: BoxFit.cover,
+                        // Jika gambar gagal dimuat
                         errorBuilder: (_, __, ___) => const Icon(
                           Icons.broken_image,
                           color: AppColors.honeydew,
                         ),
                       )
+                    // Jika gambar tidak ada
                     : const Icon(Icons.image, color: AppColors.honeydew),
               ),
 
               // Indikator zoom-in jika gambar ada di penyimpanan lokal
-              if (fileExists)
+              if (hasImage)
                 Positioned(
                   bottom: 4,
                   right: 4,

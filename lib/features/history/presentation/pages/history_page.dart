@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:pepperlens_ai/core/constants/colors.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/custom_snackbar.dart';
+import 'package:pepperlens_ai/features/history/presentation/widgets/history_download_dialog.dart';
 import 'package:pepperlens_ai/features/history/logic/delete_file_helper.dart';
 import 'package:pepperlens_ai/features/history/presentation/pages/visualization_page.dart';
 import 'package:pepperlens_ai/features/history/presentation/widgets/history_card.dart';
@@ -33,6 +36,7 @@ class _HistoryPageState extends State<HistoryPage> {
   // Daftar kategori yang tersedia untuk filter
   final List<String> _categories = [
     'Hari ini',
+    'Minggu ini',
     'Bulan ini',
     'Tahun ini',
     'Semua',
@@ -102,90 +106,21 @@ class _HistoryPageState extends State<HistoryPage> {
               );
             }
 
+            // Ambil data dari snapshot dan jika data kosong maka diinisialisasi dengan array kosong
             final data = snapshot.data ?? [];
 
-            // Tampilkan pesan jika tidak ada data hasil dan riwayat deteksi ditemukan di database
-            if (data.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                child: Column(
-                  children: [
-                    HistoryHeaderActions(
-                      selectedCategory: _selectedCategory,
-                      categories: _categories,
-                      onCategoryChanged: (newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _selectedCategory = newValue;
-                          });
-                        }
-                      },
-                      // Halaman visualisasi masih kosong
-                      onVisualisasiTap: () {
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        Get.to(
-                          () => VisualizationPage(filter: _selectedCategory),
-                        );
-                      },
-                      // Download gagal karena data masih kosong
-                      onDownloadTap: () {
-                        CustomSnackbar.showSnackbar(
-                          context,
-                          message: 'Data riwayat masih kosong',
-                          isSuccess: false,
-                        );
-                      },
-                      isDownloading: _isDownloading,
-                    ),
-                    // Halaman riwayat masih kosong
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.history,
-                            size: 50,
-                            color: AppColors.darkCyan.withAlpha(
-                              (0.25 * 255).toInt(),
-                            ),
-                          ),
-                          Text(
-                            "Belum ada data riwayat\nuntuk periode ini",
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.manropeOne,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            // Tampilkan daftar riwayat deteksi
-            return ListView.separated(
-              // Padding untuk menampilkan content di bawah appBar
-              padding: const EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 10,
-                bottom: 30,
-              ),
-              itemCount: data.length + 1,
-              separatorBuilder: (context, index) {
-                return index == 0
-                    ? const SizedBox(height: 20)
-                    : const SizedBox(height: 12);
-              },
-              itemBuilder: (context, index) {
-                // Jika index 0, tampilkan baris filter dan tombol visualisasi
-                if (index == 0) {
-                  return HistoryHeaderActions(
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  // Komponen header fitur riwayat (dropdown, visualisasi, unduh)
+                  child: HistoryHeaderActions(
                     selectedCategory: _selectedCategory,
                     categories: _categories,
+                    // Callback ketika user mengubah filter kategori riwayat
                     onCategoryChanged: (newValue) {
                       if (newValue != null) {
                         setState(() {
@@ -193,85 +128,241 @@ class _HistoryPageState extends State<HistoryPage> {
                         });
                       }
                     },
-                    // Halaman visualisasi sudah ada data
+                    // Halaman visualisasi
                     onVisualisasiTap: () {
+                      // Bersihkan snackbar jika sedang aktif
                       ScaffoldMessenger.of(context).clearSnackBars();
+
+                      // Navigasi ke halaman visualisasi
                       Get.to(
-                        () => VisualizationPage(filter: _selectedCategory),
+                        () =>
+                            VisualizationPage(initialFilter: _selectedCategory),
                       );
                     },
-                    // Download data hasil deteksi
-                    onDownloadTap: () async {
-                      // State bernilai true
-                      setState(() => _isDownloading = true);
-
-                      try {
-                        // Ambil data dari repository sesuai filter
-                        final pdfData = await _historyRepository
-                            .getDetailHistoryDetection(
-                              filter: _selectedCategory,
+                    // Logika Download
+                    onDownloadTap: data.isEmpty
+                        ? () {
+                            // Snackbar gagal download jika data riwayat kosong
+                            CustomSnackbar.showSnackbar(
+                              context,
+                              message: 'Data riwayat pada periode ini kosong',
+                              isSuccess: false,
                             );
+                          }
+                        : () {
+                            // Dialog filter rentang riwayat untuk download
+                            HistoryDownloadDialog.show(
+                              context,
+                              // Kategori filter yang dipilih pengguna di dropdown
+                              currentCategory: _selectedCategory,
+                              categories: [
+                                'Semua',
+                                'Hari ini',
+                                'Minggu ini',
+                                'Bulan ini',
+                                'Tahun ini',
+                                'Kustom',
+                              ],
+                              // Callback ketika pengguna memilih kategori filter
+                              onDownloadConfirm: (filterParam, pdfTitle) async {
+                                setState(() => _isDownloading = true);
 
-                        // Generate dokumen berbentuk PDF
-                        await PdfExportHelper.generateAndOpenReport(
-                          category: _selectedCategory,
-                          historyData: pdfData,
-                        );
-                      } catch (e) {
-                        debugPrint("Error: $e");
-                      } finally {
-                        // State bernilai false
-                        if (mounted) setState(() => _isDownloading = false);
-                      }
-                    },
+                                try {
+                                  // Ambil data SQLite melalui repository
+                                  final pdfData = await _historyRepository
+                                      .getDetailHistoryDetection(
+                                        filter: filterParam,
+                                      );
+
+                                  if (!context.mounted) return;
+
+                                  // Snackbar gagal download jika data riwayat kosong
+                                  if (pdfData.isEmpty) {
+                                    CustomSnackbar.showSnackbar(
+                                      context,
+                                      message:
+                                          'Data riwayat pada periode ini kosong',
+                                      isSuccess: false,
+                                    );
+                                    return;
+                                  }
+
+                                  // Izin akses galeri untuk mengakses gambar
+                                  final PermissionState permission =
+                                      await PhotoManager.requestPermissionExtend();
+                                  final bool hasGalleryAccess =
+                                      permission.isAuth;
+
+                                  // List menyimpan data riwayat dengan path file gambar yang sudah tervalidasi
+                                  List<Map<String, dynamic>> validatedPdfData =
+                                      [];
+
+                                  // Loop untuk mengambil gambar hasil deteksi
+                                  for (var item in pdfData) {
+                                    // Ambil path gambar hasil deteksi dan asset id dari SQLite
+                                    final String internalPath =
+                                        item['path_deteksi'] ?? '';
+                                    final String assetId =
+                                        item['asset_id'] ?? '';
+
+                                    // Variabel penampung gambar hasil deteksi
+                                    String finalImagePathForPdf = '';
+
+                                    // Jika path gambar hasil deteksi tersedia dan filenya ada di storage aplikasi
+                                    if (internalPath.isNotEmpty &&
+                                        await File(internalPath).exists()) {
+                                      finalImagePathForPdf = internalPath;
+                                    }
+                                    // Jika file internal tidak ada, coba ambil file dari galeri pakai asset id
+                                    else if (assetId.isNotEmpty &&
+                                        hasGalleryAccess) {
+                                      try {
+                                        final AssetEntity? asset =
+                                            await AssetEntity.fromId(assetId);
+                                        if (asset != null) {
+                                          final File? galleryFile =
+                                              await asset.file;
+                                          if (galleryFile != null) {
+                                            finalImagePathForPdf =
+                                                galleryFile.path;
+                                          }
+                                        }
+                                      } catch (e) {
+                                        debugPrint(
+                                          "Gagal mengambil gambar galeri untuk asset $assetId: $e",
+                                        );
+                                      }
+                                    }
+
+                                    // Tambahkan data item ke list validasi dengan memperbarui path_deteksi ke path file fisik yang valid
+                                    validatedPdfData.add({
+                                      ...item,
+                                      'path_deteksi': finalImagePathForPdf,
+                                    });
+                                  }
+
+                                  // Buat dokumen PDF dan bisa langsung dibuka di perangkat pengguna
+                                  await PdfExportHelper.generateAndOpenReport(
+                                    category: pdfTitle,
+                                    historyData: validatedPdfData,
+                                  );
+                                } catch (e) {
+                                  debugPrint("Error: $e");
+                                  // Snackbar gagal download jika terjadi kesalahan
+                                  if (context.mounted) {
+                                    CustomSnackbar.showSnackbar(
+                                      context,
+                                      message: 'Gagal mengekspor dokumen PDF',
+                                      isSuccess: false,
+                                    );
+                                  }
+                                } finally {
+                                  // Selalu dieksekusi setelah download selesai
+                                  if (mounted) {
+                                    setState(() => _isDownloading = false);
+                                  }
+                                }
+                              },
+                              // Tanggal awal dan akhir yang tersimpan di database
+                              firstDataDate: data.isNotEmpty
+                                  ? data.last['tanggal']
+                                  : null,
+                              lastDataDate: data.isNotEmpty
+                                  ? data.first['tanggal']
+                                  : null,
+                            );
+                          },
                     isDownloading: _isDownloading,
-                  );
-                }
-
-                final item = data[index - 1];
-
-                // Tampilkan kartu riwayat deteksi dengan data yang sesuai dari repository
-                return HistoryCard(
-                  date: item['tanggal'],
-                  time: item['waktu'],
-                  imagePath: item['path_deteksi'] ?? '',
-                  diseasesData: List<Map<String, dynamic>>.from(
-                    item['penyakit_data'],
                   ),
-                  onDelete: () async {
-                    // Tampilkan dialog konfirmasi sebelum menghapus riwayat
-                    bool? confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => HistoryDeleteDialog(),
-                    );
+                ),
 
-                    // Jika mengklik tombol hapus
-                    if (confirm == true) {
-                      final String assetId = item['asset_id'] ?? '';
+                // Bagian daftar list riwayat deteksi penyakit
+                Expanded(
+                  child: data.isEmpty
+                      // Jika data riwayat kosong
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.history,
+                              size: 50,
+                              color: AppColors.darkCyan.withAlpha(
+                                (0.25 * 255).toInt(),
+                              ),
+                            ),
+                            Text(
+                              "Belum ada data riwayat\nuntuk periode ini",
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.manropeOne,
+                            ),
+                          ],
+                        )
+                      // Jika data riwayat tersedia
+                      : ListView.separated(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            top: 10,
+                            bottom: 30,
+                          ),
+                          itemCount: data.length,
+                          separatorBuilder: (context, index) {
+                            return const SizedBox(height: 12);
+                          },
+                          itemBuilder: (context, index) {
+                            final item = data[index];
 
-                      // Coba hapus dari galeri, tapi jangan jadikan penghalang jika gagal
-                      if (assetId.isNotEmpty) {
-                        await DeleteFileHelper.deleteGalleryFile(assetId);
-                      }
+                            // Tampilkan kartu riwayat deteksi dengan data yang sesuai dari repository
+                            return HistoryCard(
+                              date: item['tanggal'],
+                              time: item['waktu'],
+                              imagePath: item['path_deteksi'] ?? '',
+                              timeProcess: item['waktu_proses'] ?? '',
+                              assetId: item['asset_id'] ?? '',
+                              diseasesData: List<Map<String, dynamic>>.from(
+                                item['penyakit_data'],
+                              ),
+                              onDelete: () async {
+                                // Tampilkan dialog konfirmasi sebelum menghapus riwayat
+                                bool? confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => HistoryDeleteDialog(),
+                                );
 
-                      // Hapus data dari database dan penyimpanan lokal aplikasi
-                      await _historyRepository.deleteHistory(item['id_hasil']);
+                                // Jika mengklik tombol hapus
+                                if (confirm == true) {
+                                  final String assetId = item['asset_id'] ?? '';
 
-                      if (!context.mounted) return;
+                                  // Coba hapus dari galeri, tapi jangan jadikan penghalang jika gagal
+                                  if (assetId.isNotEmpty) {
+                                    await DeleteFileHelper.deleteGalleryFile(
+                                      assetId,
+                                    );
+                                  }
 
-                      // Refresh UI
-                      setState(() {});
+                                  // Hapus data dari database dan penyimpanan lokal aplikasi
+                                  await _historyRepository.deleteHistory(
+                                    item['id_hasil'],
+                                  );
 
-                      // Tampilkan snackbar sukses jika penghapusan berhasil
-                      CustomSnackbar.showSnackbar(
-                        context,
-                        message: "Riwayat berhasil dihapus",
-                        isSuccess: true,
-                      );
-                    }
-                  },
-                );
-              },
+                                  if (!context.mounted) return;
+
+                                  // Refresh UI
+                                  setState(() {});
+
+                                  // Tampilkan snackbar sukses jika penghapusan berhasil
+                                  CustomSnackbar.showSnackbar(
+                                    context,
+                                    message: "Riwayat berhasil dihapus",
+                                    isSuccess: true,
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
             );
           },
         ),

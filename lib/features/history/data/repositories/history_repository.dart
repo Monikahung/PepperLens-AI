@@ -7,16 +7,28 @@ class HistoryRepository {
   // Instance dari DatabaseHelper untuk melakukan operasi database
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
-  // Ambil data hasil deteksi berdasarkan filter yang dipilih
+  // Ambil data hasil deteksi berdasarkan filter yang dipilih (tampilan data riwayat dan visualisasi)
   Future<List<Map<String, dynamic>>> getHistoryDetection({
     String filter = 'Semua',
   }) async {
     final db = await _dbHelper.database;
     String whereClause = '';
+    List<dynamic> whereArgs = [];
 
+    // Jika filter 'Kostum'
+    if (filter.contains('_')) {
+      List<String> range = filter.split('_');
+      whereClause = "WHERE date(waktu_deteksi) BETWEEN ? AND ?";
+      whereArgs = [range[0], range[1]];
+    }
     // Jika filter 'Hari ini'
-    if (filter == 'Hari ini') {
+    else if (filter == 'Hari ini') {
       whereClause = "WHERE date(waktu_deteksi) = date('now', 'localtime')";
+    }
+    // Jika filter 'Minggu ini'
+    else if (filter == 'Minggu ini') {
+      whereClause =
+          "WHERE strftime('%Y-%W', waktu_deteksi) = strftime('%Y-%W', 'now', 'localtime')";
     }
     // Jika filter 'Bulan ini'
     else if (filter == 'Bulan ini') {
@@ -33,7 +45,7 @@ class HistoryRepository {
     final List<Map<String, dynamic>> masterData = await db.rawQuery('''
         SELECT * FROM Hasil_Deteksi $whereClause
         ORDER BY waktu_deteksi DESC
-      ''');
+      ''', whereArgs);
 
     // Variabel untuk menyimpan data yang diambil dari database
     List<Map<String, dynamic>> results = [];
@@ -59,7 +71,8 @@ class HistoryRepository {
       DateTime dateTime = DateTime.parse(rawIsoDate);
 
       String date = DateFormat('dd MMMM yyyy', 'id_ID').format(dateTime);
-      String time = DateFormat('HH:mm:ss').format(dateTime);
+      String time = DateFormat('HH:mm').format(dateTime);
+      String timeProcess = master['waktu_proses'].toString();
 
       // Tambahkan data yang diambil tersebut ke dalam variabel results
       results.add({
@@ -67,6 +80,7 @@ class HistoryRepository {
         'tanggal': date,
         'waktu': time,
         'asset_id': master['galeri_id'],
+        'waktu_proses': timeProcess,
         'path_potret': master['path_gambar_potret'],
         'path_deteksi': master['path_gambar_deteksi'],
         'penyakit_data': details
@@ -112,16 +126,28 @@ class HistoryRepository {
     );
   }
 
-  // Ambil data detail deteksi berdasarkan filter yang dipilih
+  // Ambil data detail deteksi berdasarkan filter yang dipilih (tampilan unduh data riwayat PDF)
   Future<List<Map<String, dynamic>>> getDetailHistoryDetection({
     String filter = 'Semua',
   }) async {
     final db = await _dbHelper.database;
     String whereClause = '';
+    List<dynamic> whereArgs = [];
 
+    // Jika filter 'Kostum'
+    if (filter.contains('_')) {
+      List<String> range = filter.split('_');
+      whereClause = "WHERE date(waktu_deteksi) BETWEEN ? AND ?";
+      whereArgs = [range[0], range[1]];
+    }
     // Jika filter 'Hari ini'
-    if (filter == 'Hari ini') {
+    else if (filter == 'Hari ini') {
       whereClause = "WHERE date(waktu_deteksi) = date('now', 'localtime')";
+    }
+    // Jika filter 'Minggu ini'
+    else if (filter == 'Minggu ini') {
+      whereClause =
+          "WHERE strftime('%Y-%W', waktu_deteksi) = strftime('%Y-%W', 'now', 'localtime')";
     }
     // Jika filter 'Bulan ini'
     else if (filter == 'Bulan ini') {
@@ -138,7 +164,7 @@ class HistoryRepository {
     final List<Map<String, dynamic>> masterData = await db.rawQuery('''
       SELECT * FROM Hasil_Deteksi $whereClause
       ORDER BY waktu_deteksi DESC
-    ''');
+    ''', whereArgs);
 
     // Variabel untuk menyimpan data hasil deteksi yang lengkap dengan detailnya
     List<Map<String, dynamic>> results = [];
@@ -169,6 +195,7 @@ class HistoryRepository {
         'id_hasil': idMaster,
         'tanggal': date,
         'waktu': time,
+        'waktu_proses': master['waktu_proses'],
         'asset_id': master['galeri_id'],
         'path_potret': master['path_gambar_potret'],
         'path_deteksi': master['path_gambar_deteksi'],
