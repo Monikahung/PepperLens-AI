@@ -11,15 +11,15 @@ class PenyebabSeed {
     // Penyebab Penyakit Kuning
     await txn.insert('Penyebab', {
       'id_penyakit': idKuning,
-      'desc_penyebab': 'Nematoda atau cacing Radopholus similis.',
+      'desc_penyebab': 'Nematoda atau cacing _Radopholus similis_.',
     });
     await txn.insert('Penyebab', {
       'id_penyakit': idKuning,
-      'desc_penyebab': 'Nematoda atau cacing Meloidogyne incognita.',
+      'desc_penyebab': 'Nematoda atau cacing _Meloidogyne incognita_.',
     });
     await txn.insert('Penyebab', {
       'id_penyakit': idKuning,
-      'desc_penyebab': 'Jamur Fusarium oxysporum.',
+      'desc_penyebab': 'Jamur _Fusarium oxysporum_.',
     });
     await txn.insert('Penyebab', {
       'id_penyakit': idKuning,
@@ -32,7 +32,7 @@ class PenyebabSeed {
     // Penyebab Penyakit Busuk Pangkal Batang
     await txn.insert('Penyebab', {
       'id_penyakit': idBPB,
-      'desc_penyebab': 'Infeksi patogen tanah seperti Phytophthora capsici.',
+      'desc_penyebab': 'Infeksi patogen tanah seperti _Phytophthora capsici_.',
     });
     await txn.insert('Penyebab', {
       'id_penyakit': idBPB,

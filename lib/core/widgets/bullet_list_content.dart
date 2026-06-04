@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:pepperlens_ai/core/constants/text_style.dart';
 
 // Widget untuk menampilkan teks dalam bentuk bullet
@@ -26,6 +27,11 @@ class BulletListContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(data.length, (index) {
+        // Ambil teks berdasarkan kondisi map atau bukan
+        final String textString = data[index] is Map
+            ? data[index][column].toString()
+            : data[index].toString();
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
@@ -37,11 +43,9 @@ class BulletListContent extends StatelessWidget {
               const SizedBox(width: 4),
               // Teks informasi
               Expanded(
-                child: Text(
-                  data[index] is Map
-                      ? data[index][column].toString()
-                      : data[index].toString(),
-                  style: AppTextStyles.manropeTen,
+                child: MarkdownBody(
+                  data: textString,
+                  styleSheet: MarkdownStyleSheet(p: AppTextStyles.manropeTen),
                 ),
               ),
             ],
