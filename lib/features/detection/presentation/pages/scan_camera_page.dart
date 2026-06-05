@@ -759,8 +759,19 @@ class _ScanCameraPageState extends State<ScanCameraPage>
                         : (details) => _onTapCanvas(details, constraints),
                     child: Stack(
                       children: [
-                        // Preview kamera
-                        SizedBox.expand(child: CameraPreview(_controller!)),
+                        // Preview kamera menggunakan fittedbox agar tidak gepeng
+                        SizedBox.expand(
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: constraints.maxWidth,
+                              height:
+                                  constraints.maxHeight /
+                                  _controller!.value.aspectRatio,
+                              child: CameraPreview(_controller!),
+                            ),
+                          ),
+                        ),
 
                         // Widget untuk exposure dan fokus kamera
                         if (_showFocusCircle && _tapPosition != null)
