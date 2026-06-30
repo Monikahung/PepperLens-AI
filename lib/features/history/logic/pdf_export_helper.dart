@@ -441,7 +441,7 @@ class PdfExportHelper {
 
                   // Keterangan akurasi dan perhitungan
                   pw.Text(
-                    "*Akurasi: Persentase keberhasilan sistem, dihitung dengan rumus: (Deteksi Benar / Total Objek Aktual) x 100%",
+                    "*Akurasi: Persentase keberhasilan sistem, dihitung dengan rumus: (Deteksi Benar / (Deteksi Benar + Deteksi Salah + Tidak Terdeteksi)) x 100%",
                     style: const pw.TextStyle(fontSize: 10),
                   ),
 
